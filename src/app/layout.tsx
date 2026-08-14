@@ -55,7 +55,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${barlow.variable} ${barlowCondensed.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
-        <Header navLinks={navLinks} site={site} />
+        <Header navLinks={navLinks as { href: string; label: string }[]} site={site} />
         <main className="flex-1">{children}</main>
         <FloatingCTA
           mobile={site.mobile || ""}
