@@ -3,110 +3,47 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-/* ─── SVG Icons ─────────────────────────────────────────── */
-
+/* ─── Minimal Icons ─── */
 function IconWhatsApp() {
   return (
-    <svg viewBox="0 0 32 32" fill="none" className="w-full h-full" aria-hidden>
-      {/* Green circle bg */}
-      <circle cx="16" cy="16" r="16" fill="url(#wa-bg)" />
-      <defs>
-        <radialGradient id="wa-bg" cx="35%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#60d976" />
-          <stop offset="100%" stopColor="#1da851" />
-        </radialGradient>
-      </defs>
-      {/* Official WA phone path */}
-      <path
-        d="M22.9 19.7c-.3-.2-2-.97-2.31-1.08-.31-.11-.53-.17-.76.17-.23.34-.87 1.08-1.07 1.3-.2.22-.39.25-.72.08-.34-.17-1.42-.52-2.7-1.66-1-.88-1.67-1.97-1.87-2.3-.19-.33-.02-.51.15-.68.15-.15.34-.39.5-.59.17-.19.22-.33.34-.56.11-.22.05-.42-.03-.59-.08-.17-.76-1.82-1.04-2.49-.27-.65-.55-.56-.76-.57l-.64-.01c-.22 0-.58.08-.89.42-.3.34-1.17 1.14-1.17 2.78 0 1.64 1.2 3.22 1.37 3.44.17.22 2.36 3.6 5.72 5.05.8.34 1.43.55 1.91.7.8.26 1.53.22 2.11.13.64-.1 1.98-.81 2.26-1.59.28-.78.28-1.45.19-1.59-.08-.14-.3-.22-.63-.39Z"
-        fill="white"
-      />
-      <path
-        d="M16 4.5C9.65 4.5 4.5 9.65 4.5 16c0 2.04.55 3.95 1.5 5.6L4.5 27.5l6.08-1.59A11.42 11.42 0 0 0 16 27.5c6.35 0 11.5-5.15 11.5-11.5S22.35 4.5 16 4.5Zm0 1.8a9.7 9.7 0 0 1 9.7 9.7 9.7 9.7 0 0 1-9.7 9.7 9.67 9.67 0 0 1-5.18-1.5l-.37-.23-3.82 1 1.02-3.72-.24-.38A9.66 9.66 0 0 1 6.3 16 9.7 9.7 0 0 1 16 6.3Z"
-        fill="white"
-        opacity="0.92"
-      />
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5" aria-hidden>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
     </svg>
   );
 }
 
 function IconPhone() {
   return (
-    <svg viewBox="0 0 32 32" fill="none" className="w-full h-full" aria-hidden>
-      <circle cx="16" cy="16" r="16" fill="url(#ph-bg)" />
-      <defs>
-        <radialGradient id="ph-bg" cx="30%" cy="28%" r="75%">
-          <stop offset="0%" stopColor="#4a9fc8" />
-          <stop offset="100%" stopColor="#0a2535" />
-        </radialGradient>
-      </defs>
-      {/* Phone handset */}
-      <path
-        d="M10.8 13.1c.9 1.8 2.2 3.5 3.8 4.8a13 13 0 0 0 4.7 2.7l1.8-1.8c.2-.2.5-.28.75-.15.9.3 1.88.47 2.88.47.42 0 .75.34.75.75v3.38c0 .42-.33.75-.75.75C14.6 24 8 17.4 8 9.25c0-.42.33-.75.75-.75h3.38c.42 0 .75.33.75.75 0 1.01.17 2 .47 2.88.1.25 0 .53-.18.73L10.8 13.1Z"
-        fill="white"
-      />
-      {/* Signal arcs */}
-      <path d="M19.5 9a5.5 5.5 0 0 1 5.5 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.65"/>
-      <path d="M19.5 12a2.5 2.5 0 0 1 2.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.4"/>
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5" aria-hidden>
+      <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z" />
     </svg>
   );
 }
 
 function IconMail() {
   return (
-    <svg viewBox="0 0 32 32" fill="none" className="w-full h-full" aria-hidden>
-      <circle cx="16" cy="16" r="16" fill="url(#ml-bg)" />
-      <defs>
-        <linearGradient id="ml-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#374151" />
-          <stop offset="100%" stopColor="#111827" />
-        </linearGradient>
-      </defs>
-      <rect x="8" y="11" width="16" height="11" rx="2" stroke="white" strokeWidth="1.4" fill="none"/>
-      <path d="M8 13l8 5.5L24 13" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="w-5 h-5" aria-hidden>
+      <rect width="20" height="16" x="2" y="4" />
+      <path d="m22 7-10 7L2 7" />
     </svg>
   );
 }
 
 function IconChat() {
   return (
-    <svg viewBox="0 0 32 32" fill="none" className="w-full h-full" aria-hidden>
-      <circle cx="16" cy="16" r="16" fill="url(#ct-bg)" />
-      <defs>
-        <linearGradient id="ct-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#c06828" />
-          <stop offset="100%" stopColor="#7a3d15" />
-        </linearGradient>
-      </defs>
-      <path d="M22 10H10a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8l4 3v-3a2 2 0 0 0 0-2V12a2 2 0 0 0-2-2Z"
-        stroke="white" strokeWidth="1.4" fill="rgba(255,255,255,0.12)" strokeLinejoin="round"/>
-      <path d="M12 15h8M12 18h5" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" className="w-5 h-5" aria-hidden>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   );
 }
 
-/* ─── Pulse Ring ─────────────────────────────────────────── */
-function PulseRing({ color, delay = "0s" }: { color: string; delay?: string }) {
-  return (
-    <span
-      aria-hidden
-      className="absolute inset-0 rounded-full"
-      style={{
-        background: color,
-        animation: `pulse-ring 2.8s cubic-bezier(0.2,0.6,0.4,1) ${delay} infinite`,
-      }}
-    />
-  );
-}
-
-/* ─── Props ──────────────────────────────────────────────── */
 type Props = { mobile: string; whatsapp: string; email: string };
 
 export default function FloatingCTA({ mobile, whatsapp, email }: Props) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setShow(true), 600);
+    const t = setTimeout(() => setShow(true), 300);
     return () => clearTimeout(t);
   }, []);
 
@@ -115,149 +52,63 @@ export default function FloatingCTA({ mobile, whatsapp, email }: Props) {
     "Hi DSP Precision, I would like to enquire about your precision balls."
   );
 
-  const base =
-    "group flex items-center rounded-full overflow-hidden cursor-pointer select-none transition-all duration-300";
-
   return (
-    <>
-      <style>{`
-        @keyframes pop-in {
-          0%   { opacity:0; transform: scale(0.3) translateY(50px); }
-          60%  { opacity:1; transform: scale(1.07) translateY(-6px);}
-          80%  { transform: scale(0.96) translateY(2px); }
-          100% { opacity:1; transform: scale(1) translateY(0);      }
-        }
-        @keyframes pulse-ring {
-          0%   { opacity: 0.55; transform: scale(1);   }
-          80%  { opacity: 0;    transform: scale(2.05);}
-          100% { opacity: 0;    transform: scale(2.05);}
-        }
-        @keyframes wa-bounce {
-          0%,100%{ transform: rotate(0deg) scale(1);    }
-          25%    { transform: rotate(-14deg) scale(1.12);}
-          50%    { transform: rotate(11deg) scale(1.07); }
-          75%    { transform: rotate(-6deg) scale(1.09); }
-        }
-        @keyframes ph-ring {
-          0%,100%{ transform: rotate(0deg);  }
-          15%    { transform: rotate(-20deg);}
-          35%    { transform: rotate(17deg); }
-          50%    { transform: rotate(-11deg);}
-          65%    { transform: rotate(7deg);  }
-          80%    { transform: rotate(0deg);  }
-        }
-        .cta-wa:hover .wa-ico { animation: wa-bounce 0.72s ease forwards; }
-        .cta-ph:hover .ph-ico { animation: ph-ring  0.80s ease forwards; }
-
-        /* Expand label on hover */
-        .cta-lbl {
-          max-width: 0;
-          overflow: hidden;
-          opacity: 0;
-          white-space: nowrap;
-          font-size: 0.76rem;
-          font-weight: 700;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-          transition: max-width 0.38s cubic-bezier(.34,1.56,.64,1),
-                      opacity 0.3s ease,
-                      padding 0.32s cubic-bezier(.34,1.56,.64,1);
-          padding-right: 0;
-        }
-        .group:hover .cta-lbl {
-          max-width: 9rem;
-          opacity: 1;
-          padding-left: 0.55rem;
-          padding-right: 1.1rem;
-        }
-
-        /* Pop-in */
-        .cta-item { opacity: 0; }
-        .cta-item.visible { animation: pop-in 0.65s cubic-bezier(.34,1.56,.64,1) both; }
-      `}</style>
-
-      <div className="fixed bottom-6 right-5 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end gap-3">
-
-        {/* ── Email (desktop only) ── */}
+    <div
+      className={`fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2.5 transition-opacity duration-300 ${
+        show ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      {/* Email */}
+      {email && (
         <a
           href={`mailto:${email}`}
           title={email}
           aria-label={`Email: ${email}`}
-          className={`${base} cta-item${show ? " visible" : ""} shadow-[0_8px_30px_rgba(17,24,39,0.40)] hover:shadow-[0_14px_40px_rgba(17,24,39,0.55)] hover:-translate-y-1 hidden sm:flex`}
-          style={{ animationDelay: "0.7s", background: "linear-gradient(135deg,#7c2d12,#3d0f00)" }}
+          className="hidden sm:flex items-center gap-2.5 bg-[#0a0a0a] text-white px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider border border-[#0a0a0a] hover:bg-[#262626] transition-colors"
         >
-          <span className="flex items-center justify-center w-12 h-12 shrink-0">
-            <span className="w-7 h-7"><IconMail /></span>
-          </span>
-          <span className="cta-lbl text-white">Email us</span>
+          <IconMail />
+          <span>Email</span>
         </a>
+      )}
 
-        {/* ── Phone ── */}
-        {mobile && (
-          <a
-            href={`tel:${mobile.replace(/\s/g, "")}`}
-            title={`Call: ${mobile}`}
-            aria-label={`Call DSP at ${mobile}`}
-            className={`${base} cta-ph cta-item${show ? " visible" : ""} shadow-[0_8px_32px_rgba(10,37,53,0.50)] hover:shadow-[0_14px_44px_rgba(10,37,53,0.65)] hover:-translate-y-1`}
-            style={{
-              animationDelay: "0.48s",
-              background: "linear-gradient(145deg,#ea580c,#7c2d12)",
-            }}
-          >
-            {/* pulse rings behind icon */}
-            <span className="relative flex items-center justify-center w-14 h-14 shrink-0">
-              <PulseRing color="rgba(234,88,12,0.55)" />
-              <PulseRing color="rgba(234,88,12,0.35)" delay="1.4s" />
-              <span className="ph-ico relative w-8 h-8 drop-shadow-sm">
-                <IconPhone />
-              </span>
-            </span>
-            <span className="cta-lbl text-white">Call us</span>
-          </a>
-        )}
-
-        {/* ── WhatsApp (largest — hero button) ── */}
-        {waNum && (
-          <a
-            href={`https://wa.me/${waNum}?text=${waMsg}`}
-            target="_blank"
-            rel="noreferrer"
-            title="Chat on WhatsApp"
-            aria-label="WhatsApp DSP Precision"
-            className={`${base} cta-wa cta-item${show ? " visible" : ""} shadow-[0_10px_36px_rgba(37,211,102,0.55)] hover:shadow-[0_16px_48px_rgba(37,211,102,0.70)] hover:-translate-y-1.5`}
-            style={{
-              animationDelay: "0.24s",
-              background: "linear-gradient(145deg,#25D366,#128C7E)",
-            }}
-          >
-            <span className="relative flex items-center justify-center w-16 h-16 shrink-0">
-              <PulseRing color="rgba(45,218,110,0.55)" />
-              <PulseRing color="rgba(45,218,110,0.32)" delay="1.4s" />
-              <span className="wa-ico relative w-10 h-10 drop-shadow-md">
-                <IconWhatsApp />
-              </span>
-            </span>
-            <span className="cta-lbl text-white">WhatsApp</span>
-          </a>
-        )}
-
-        {/* ── Get Quote ── */}
-        <Link
-          href="/contact"
-          title="Get a Quote"
-          aria-label="Get a Quote"
-          className={`${base} cta-item${show ? " visible" : ""} shadow-[0_8px_30px_rgba(192,104,40,0.50)] hover:shadow-[0_14px_44px_rgba(192,104,40,0.65)] hover:-translate-y-1`}
-          style={{
-            animationDelay: "0.04s",
-            background: "linear-gradient(145deg,#f97316,#c2410c)",
-          }}
+      {/* Phone */}
+      {mobile && (
+        <a
+          href={`tel:${mobile.replace(/\s/g, "")}`}
+          title={`Call: ${mobile}`}
+          aria-label={`Call DSP at ${mobile}`}
+          className="flex items-center gap-2.5 bg-[#0a0a0a] text-white px-3.5 py-2.5 text-xs font-semibold uppercase tracking-wider border border-[#0a0a0a] hover:bg-[#262626] transition-colors"
         >
-          <span className="flex items-center justify-center w-12 h-12 shrink-0">
-            <span className="w-7 h-7"><IconChat /></span>
-          </span>
-          <span className="cta-lbl text-white">Get Quote</span>
-        </Link>
-      </div>
-    </>
+          <IconPhone />
+          <span className="hidden sm:inline">Call</span>
+        </a>
+      )}
+
+      {/* WhatsApp */}
+      {waNum && (
+        <a
+          href={`https://wa.me/${waNum}?text=${waMsg}`}
+          target="_blank"
+          rel="noreferrer"
+          title="Chat on WhatsApp"
+          aria-label="WhatsApp DSP Precision"
+          className="flex items-center gap-2.5 bg-[#f97316] text-white px-4 py-3 text-xs font-bold uppercase tracking-wider border border-[#f97316] hover:bg-[#c2410c] hover:border-[#c2410c] transition-colors"
+        >
+          <IconWhatsApp />
+          <span>WhatsApp</span>
+        </a>
+      )}
+
+      {/* Quote */}
+      <Link
+        href="/contact"
+        title="Get a Quote"
+        aria-label="Get a Quote"
+        className="flex items-center gap-2.5 bg-white text-[#0a0a0a] px-3.5 py-2.5 text-xs font-bold uppercase tracking-wider border border-[#0a0a0a] hover:bg-[#0a0a0a] hover:text-white transition-colors"
+      >
+        <IconChat />
+        <span className="hidden sm:inline">Get Quote</span>
+      </Link>
+    </div>
   );
 }

@@ -6,22 +6,19 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/products/${product.slug}`} className="product-card group">
       <ComingSoon
-        label={`${product.title} — image coming soon`}
+        label={`${product.title}`}
         aspect="wide"
-        className="rounded-none"
+        className="rounded-none border-b border-[#e5e5e5]"
       />
-      <div className="p-5">
-        <h3 className="font-display text-xl tracking-wide text-[var(--ink)] transition group-hover:text-[var(--steel)]">
+      <div className="p-6">
+        <h3 className="font-display text-xl uppercase tracking-tight text-[#0a0a0a] transition-colors group-hover:text-[#f97316]">
           {product.title}
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+        <p className="mt-2 text-xs leading-relaxed text-[#737373]">
           {product.short}
         </p>
-        <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--copper)]">
-          View details
-          <span aria-hidden className="transition group-hover:translate-x-1">
-            →
-          </span>
+        <span className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#f97316]">
+          View details &rarr;
         </span>
       </div>
     </Link>
