@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useCallback } from "react";
 
 type Props = {
   title: string;
@@ -78,13 +78,13 @@ export function useToast() {
     { id: number; message: string; type: ToastType }[]
   >([]);
 
-  const show = (message: string, type: ToastType = "success") => {
-    const id = Date.now();
+  const show = useCallback((message: string, type: ToastType = "success") => {
+    const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3500);
-  };
+  }, []);
 
   const ToastContainer = () => (
     <div className="fixed z-50 top-5 right-5 space-y-2">
@@ -115,9 +115,9 @@ export function useConfirmDelete() {
     onConfirm: () => void;
   }>({ open: false, message: "", onConfirm: () => {} });
 
-  const confirm = (message: string, onConfirm: () => void) => {
+  const confirm = useCallback((message: string, onConfirm: () => void) => {
     setState({ open: true, message, onConfirm });
-  };
+  }, []);
 
   const Dialog = () =>
     state.open ? (

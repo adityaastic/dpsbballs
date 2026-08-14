@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 
 type User = {
   id: string;
@@ -26,7 +26,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/auth/me");
       if (res.ok) {
@@ -40,14 +40,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    refresh();
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
     try {
@@ -70,14 +69,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch("/api/admin/auth/logout", { method: "POST" });
     } catch {}
     setUser(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, loading, error, login, logout, refresh }}>

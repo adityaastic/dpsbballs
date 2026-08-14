@@ -16,6 +16,10 @@ import {
   ceramicCompareRows,
 } from "@/data/technical";
 
+function plain<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn();
@@ -24,13 +28,19 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
+function stripId<T extends { _id?: any }>(item: T): Omit<T, "_id"> {
+  const { _id, ...rest } = item;
+  return rest;
+}
+
 export async function getProducts(): Promise<StaticProductType[]> {
   return safe(async () => {
     await dbConnect();
-    const items = await Product.find({ published: true })
+    const rawItems = await Product.find({ published: true })
       .sort({ order: 1, createdAt: -1 })
       .lean();
-    if (items.length === 0) return staticProducts;
+    if (rawItems.length === 0) return staticProducts;
+    const items = plain(rawItems);
     return items.map((p: any) => ({
       slug: p.slug,
       title: p.title,
@@ -39,12 +49,8 @@ export async function getProducts(): Promise<StaticProductType[]> {
       imageUrl: p.imageUrl,
       highlights: p.highlights || [],
       grades: p.grades || [],
-      specs: p.specs || [],
-      tables: (p.tables || []).map((t: any) => ({
-        title: t.title,
-        headers: t.headers || [],
-        rows: t.rows || [],
-      })),
+      specs: (p.specs || []).map((s: any) => stripId(s)),
+      tables: (p.tables || []).map((t: any) => stripId(t)),
     }));
   }, staticProducts);
 }
@@ -54,29 +60,42 @@ export async function getProduct(slug: string) {
   return all.find((p) => p.slug === slug);
 }
 
+function cleanAddress(addr: any) {
+  if (!addr) return addr;
+  const { _id, ...rest } = addr;
+  return rest;
+}
+
 export async function getSiteData() {
   return safe(async () => {
     await dbConnect();
-    const s = await SiteSetting.findOne({ key: "main" }).lean();
-    if (!s) {
+    const raw = await SiteSetting.findOne({ key: "main" }).lean();
+    if (!raw) {
       return { site: staticSite, navLinks: staticNav, seo: { title: "", description: "" } };
     }
+    const s = plain(raw);
     const site: any = {
       name: s.name || staticSite.name,
       shortName: s.shortName || staticSite.shortName,
       tagline: s.tagline || staticSite.tagline,
+      logoUrl: s.logoUrl || "",
+      logoDarkUrl: s.logoDarkUrl || "",
+      faviconUrl: s.faviconUrl || "",
       email: s.email || staticSite.email,
       phoneWork: s.phoneWork || staticSite.phoneWork,
       phoneRegd: s.phoneRegd || staticSite.phoneRegd,
       phoneFax: s.phoneFax || staticSite.phoneFax,
       mobile: s.mobile || staticSite.mobile,
-      workOffice: s.workOffice || staticSite.workOffice,
-      regdOffice: s.regdOffice || staticSite.regdOffice,
-      highlights: (s.highlights && s.highlights.length > 0) ? s.highlights : staticSite.highlights,
+      whatsapp: s.whatsapp || (staticSite as any).whatsapp || "",
+      workOffice: cleanAddress(s.workOffice) || staticSite.workOffice,
+      regdOffice: cleanAddress(s.regdOffice) || staticSite.regdOffice,
+      highlights: (s.highlights && s.highlights.length > 0)
+        ? s.highlights.map((h: any) => stripId(h))
+        : staticSite.highlights,
     };
     const navLinks =
       s.navLinks && s.navLinks.length > 0
-        ? [...s.navLinks].sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((n: any) => ({ href: n.href, label: n.label }))
+        ? [...s.navLinks].sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((n: any) => stripId(n))
         : staticNav;
     const seo = {
       title: s.seoTitle || "",
@@ -89,8 +108,8 @@ export async function getSiteData() {
 export async function getTechnical() {
   return safe(async () => {
     await dbConnect();
-    const t = await TechnicalContent.findOne({ key: "main" }).lean();
-    if (!t) {
+    const raw = await TechnicalContent.findOne({ key: "main" }).lean();
+    if (!raw) {
       return {
         manufacturingProcess,
         materialComparison,
@@ -99,18 +118,22 @@ export async function getTechnical() {
         ceramicCompareRows,
       };
     }
+    const t = plain(raw);
     return {
       manufacturingProcess:
         (t.manufacturingProcess && t.manufacturingProcess.length > 0)
           ? [...t.manufacturingProcess].sort(
               (a: any, b: any) => (a.order || 0) - (b.order || 0)
-            )
+            ).map((p: any) => stripId(p))
           : manufacturingProcess,
       materialComparison: t.materialComparison?.rows?.length
-        ? t.materialComparison
+        ? {
+            ...t.materialComparison,
+            rows: t.materialComparison.rows.map((r: any) => stripId(r)),
+          }
         : materialComparison,
       clientTestimonials: t.clientTestimonials?.length
-        ? t.clientTestimonials
+        ? t.clientTestimonials.map((c: any) => stripId(c))
         : clientTestimonials,
       ceramicCompareHeaders: t.ceramicCompare?.headers?.length
         ? t.ceramicCompare.headers
@@ -131,7 +154,7 @@ export async function getTechnical() {
 export async function getPageContent(slug: string) {
   return safe(async () => {
     await dbConnect();
-    const p = await PageContent.findOne({ slug }).lean();
-    return p || null;
+    const raw = await PageContent.findOne({ slug }).lean();
+    return raw ? plain(raw) : null;
   }, null);
 }

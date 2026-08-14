@@ -26,12 +26,19 @@ export async function generateMetadata(): Promise<Metadata> {
   const description =
     seo.description ||
     "DSP Precision Products Pvt. Ltd. — manufacturer & exporter of steel, stainless steel, carbide, ceramic, brass, copper, gauge and modified precision balls from Baddi, India.";
+  const icons: any = {};
+  if (site.faviconUrl) {
+    icons.icon = site.faviconUrl;
+    icons.shortcut = site.faviconUrl;
+    icons.apple = site.faviconUrl;
+  }
   return {
     title: {
       default: title,
       template: `%s | ${site.shortName || "DSP"} Precision Products`,
     },
     description,
+    icons,
   };
 }
 
@@ -50,7 +57,11 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col antialiased">
         <Header navLinks={navLinks} site={site} />
         <main className="flex-1">{children}</main>
-        <FloatingCTA />
+        <FloatingCTA
+          mobile={site.mobile || ""}
+          whatsapp={(site as any).whatsapp || site.mobile || ""}
+          email={site.email || ""}
+        />
         <Footer products={products} site={site} />
       </body>
     </html>

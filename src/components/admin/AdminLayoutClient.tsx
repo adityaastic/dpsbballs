@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useAdminAuth } from "./AdminAuthProvider";
 
 const navItems = [
@@ -19,6 +19,27 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
   const { user, loading, logout } = useAdminAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const isLoginPage = pathname?.startsWith("/admin/login");
+  const [logoDarkUrl, setLogoDarkUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+
+  useEffect(() => {
+    if (!loading && !isLoginPage) {
+      fetch("/api/admin/settings")
+        .then((r) => r.json())
+        .then((d) => {
+          setLogoDarkUrl(d.settings?.logoDarkUrl || "");
+          setLogoUrl(d.settings?.logoUrl || "");
+        })
+        .catch(() => {});
+    }
+  }, [loading, isLoginPage]);
+
+  useEffect(() => {
+    if (!loading && !user && !isLoginPage) {
+      router.replace("/admin/login");
+    }
+  }, [loading, user, router, isLoginPage]);
 
   if (loading) {
     return (
@@ -29,7 +50,9 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
   }
 
   if (!user) {
-    router.push("/admin/login");
+    if (isLoginPage) {
+      return <>{children}</>;
+    }
     return null;
   }
 
@@ -43,7 +66,15 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
       <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0">
         <div className="px-6 py-5 border-b border-slate-800">
           <Link href="/" className="block">
-            <div className="font-display text-2xl tracking-wide">DSP</div>
+            {logoDarkUrl || logoUrl ? (
+              <img
+                src={logoDarkUrl || logoUrl}
+                alt="Admin"
+                className="h-9 w-auto object-contain mb-1"
+              />
+            ) : (
+              <div className="font-display text-2xl tracking-wide">DSP</div>
+            )}
             <div className="text-xs text-slate-400 mt-0.5">Admin Panel</div>
           </Link>
         </div>

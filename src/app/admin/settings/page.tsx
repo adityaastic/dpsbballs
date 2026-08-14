@@ -32,6 +32,25 @@ export default function AdminSettingsPage() {
   const update = (key: string, value: any) =>
     setData((d: any) => ({ ...d, [key]: value }));
 
+  const uploadLogo = async (file: File, field: "logoUrl" | "logoDarkUrl" | "faviconUrl") => {
+    try {
+      const form = new FormData();
+      form.append("files", file);
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        body: form,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Upload failed");
+      if (json.media && json.media.length > 0) {
+        update(field, json.media[0].url);
+        show("Uploaded", "success");
+      }
+    } catch (e: any) {
+      show(e.message, "error");
+    }
+  };
+
   const updateOffice = (which: "workOffice" | "regdOffice", key: string, v: any) =>
     setData((d: any) => ({
       ...d,
@@ -154,6 +173,138 @@ export default function AdminSettingsPage() {
               onChange={(e) => update("tagline", e.target.value)}
             />
           </Field>
+        </div>
+      </AdminCard>
+
+      <AdminCard className="p-6 space-y-5">
+        <h3 className="font-semibold text-slate-900">Branding & Logos</h3>
+        <p className="text-xs text-slate-500 -mt-3">
+          Upload transparent PNG/SVG files. Recommended: 400x120px for logos, 64x64px for favicon.
+        </p>
+        <div className="grid md:grid-cols-3 gap-5">
+          <div>
+            <Field label="Primary Logo (light background)">
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50">
+                {data.logoUrl ? (
+                  <div className="space-y-3">
+                    <img src={data.logoUrl} alt="Primary Logo" className="h-16 mx-auto object-contain bg-white p-2 rounded" />
+                    <div className="flex gap-2 justify-center">
+                      <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
+                        Replace
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*,.svg"
+                          onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "logoUrl")}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => update("logoUrl", "")}
+                        className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="block cursor-pointer py-6">
+                    <div className="text-3xl opacity-30 mb-2">↑</div>
+                    <div className="text-sm text-slate-600 mb-1">Click to upload logo</div>
+                    <div className="text-xs text-slate-400">PNG, SVG, JPG</div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,.svg"
+                      onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "logoUrl")}
+                    />
+                  </label>
+                )}
+              </div>
+            </Field>
+          </div>
+          <div>
+            <Field label="Dark Logo (dark background)">
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-900">
+                {data.logoDarkUrl ? (
+                  <div className="space-y-3">
+                    <img src={data.logoDarkUrl} alt="Dark Logo" className="h-16 mx-auto object-contain bg-slate-900 p-2 rounded" />
+                    <div className="flex gap-2 justify-center">
+                      <label className="text-xs px-3 py-1.5 bg-amber-600 text-white rounded cursor-pointer hover:bg-amber-700">
+                        Replace
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*,.svg"
+                          onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "logoDarkUrl")}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => update("logoDarkUrl", "")}
+                        className="text-xs px-3 py-1.5 border border-slate-600 rounded text-slate-200 hover:bg-slate-800"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="block cursor-pointer py-6">
+                    <div className="text-3xl opacity-30 text-white mb-2">↑</div>
+                    <div className="text-sm text-slate-200 mb-1">Click to upload logo</div>
+                    <div className="text-xs text-slate-500">White/light PNG or SVG</div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*,.svg"
+                      onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "logoDarkUrl")}
+                    />
+                  </label>
+                )}
+              </div>
+            </Field>
+          </div>
+          <div>
+            <Field label="Favicon (browser tab)">
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-slate-50">
+                {data.faviconUrl ? (
+                  <div className="space-y-3">
+                    <img src={data.faviconUrl} alt="Favicon" className="h-12 w-12 mx-auto object-contain bg-white p-1 rounded border border-slate-200" />
+                    <div className="flex gap-2 justify-center">
+                      <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
+                        Replace
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/x-icon,image/png,image/svg+xml,.ico"
+                          onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "faviconUrl")}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => update("faviconUrl", "")}
+                        className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="block cursor-pointer py-6">
+                    <div className="text-3xl opacity-30 mb-2">⌘</div>
+                    <div className="text-sm text-slate-600 mb-1">Click to upload</div>
+                    <div className="text-xs text-slate-400">ICO, PNG 32x32, SVG</div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/x-icon,image/png,image/svg+xml,.ico"
+                      onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "faviconUrl")}
+                    />
+                  </label>
+                )}
+              </div>
+            </Field>
+          </div>
         </div>
       </AdminCard>
 

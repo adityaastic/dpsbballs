@@ -12,6 +12,18 @@ export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [logoDarkUrl, setLogoDarkUrl] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/settings")
+      .then((r) => r.json())
+      .then((d) => {
+        setLogoUrl(d.settings?.logoUrl || "");
+        setLogoDarkUrl(d.settings?.logoDarkUrl || "");
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (user && !loading) {
@@ -41,9 +53,17 @@ export default function AdminLoginPage() {
       <ToastContainer />
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="font-display text-5xl tracking-widest text-white mb-2">
-            DSP
-          </div>
+          {logoDarkUrl || logoUrl ? (
+            <img
+              src={logoDarkUrl || logoUrl}
+              alt="Admin Login"
+              className="h-14 w-auto object-contain mx-auto mb-3"
+            />
+          ) : (
+            <div className="font-display text-5xl tracking-widest text-white mb-2">
+              DSP
+            </div>
+          )}
           <div className="text-slate-400 text-sm">Admin Panel Login</div>
         </div>
 
