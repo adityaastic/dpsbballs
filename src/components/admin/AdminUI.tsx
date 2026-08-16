@@ -3,7 +3,7 @@
 import { ReactNode, useState, useCallback, useEffect } from "react";
 
 type Props = {
-  title: string;
+  title: ReactNode;
   description?: string;
   children?: ReactNode;
   actions?: ReactNode;

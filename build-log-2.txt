@@ -1,0 +1,83 @@
+
+> website@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.3.1 (Turbopack)
+- Environments: .env
+ΓÜá Warning: Next.js ignored package-lock.json in C:\Users\91873 because it is outside the current Git repository (C:\Users\91873\Desktop\dpsball\dpsbballs).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+Γ£ô Running next.config.ts took 143ms
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 6.3s
+  Running TypeScript ...
+  Finished TypeScript in 10.2s ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/44) ...
+  Generating static pages using 15 workers (11/44) 
+  Generating static pages using 15 workers (22/44) 
+  Generating static pages using 15 workers (33/44) 
+Γ£ô Generating static pages using 15 workers (44/44) in 7.3s
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /about
+Γö£ Γùï /admin
+Γö£ Γùï /admin/enquiries
+Γö£ Γùï /admin/login
+Γö£ Γùï /admin/media
+Γö£ Γùï /admin/pages
+Γö£ ╞Æ /admin/pages/[id]
+Γö£ Γùï /admin/products
+Γö£ ╞Æ /admin/products/[id]
+Γö£ Γùï /admin/products/new
+Γö£ Γùï /admin/settings
+Γö£ Γùï /admin/technical
+Γö£ ╞Æ /api/admin/auth/login
+Γö£ ╞Æ /api/admin/auth/logout
+Γö£ ╞Æ /api/admin/auth/me
+Γö£ ╞Æ /api/admin/enquiries
+Γö£ ╞Æ /api/admin/enquiries/[id]
+Γö£ ╞Æ /api/admin/media
+Γö£ ╞Æ /api/admin/media/[id]
+Γö£ ╞Æ /api/admin/pages
+Γö£ ╞Æ /api/admin/pages/[id]
+Γö£ ╞Æ /api/admin/products
+Γö£ ╞Æ /api/admin/products/[id]
+Γö£ ╞Æ /api/admin/settings
+Γö£ ╞Æ /api/admin/technical
+Γö£ ╞Æ /api/enquiry
+Γö£ ╞Æ /api/media/file/[id]
+Γö£ ╞Æ /api/seed
+Γö£ Γùï /career
+Γö£ Γùï /clients
+Γö£ Γùï /contact
+Γö£ Γùï /disclaimer
+Γö£ Γùï /network
+Γö£ Γùï /products
+Γö£   /products/[slug]
+Γöé Γö£ ΓùÅ /products/steel-balls
+Γöé Γö£ ΓùÅ /products/stainless-steel-balls
+Γöé Γö£ ΓùÅ /products/carbide-balls
+Γöé Γöö ΓùÅ [+6 more paths]
+Γö£ Γùï /quality
+Γö£ Γùï /robots.txt
+Γö£ Γùï /sitemap.xml
+Γöö Γùï /technical
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+ΓùÅ  (SSG)      prerendered as static HTML (uses generateStaticParams)
+╞Æ  (Dynamic)  server-rendered on demand
+
