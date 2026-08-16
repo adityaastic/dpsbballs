@@ -22,8 +22,8 @@ export async function GET(
       return NextResponse.json({ error: "Enquiry not found" }, { status: 404 });
     }
     return NextResponse.json({ success: true, enquiry });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -42,8 +42,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Enquiry not found" }, { status: 404 });
     }
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -66,7 +66,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Enquiry not found" }, { status: 404 });
     }
     return NextResponse.json({ success: true, enquiry });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

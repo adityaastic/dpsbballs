@@ -75,10 +75,10 @@ export function StatCard({
   accent?: string;
   delay?: number;
 }) {
+  void gradient;
   const content = (
     <div className="p-5 md:p-6 h-full flex flex-col justify-between gap-4 relative overflow-hidden">
-      <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-gradient-to-br opacity-[0.08] blur-2xl pointer-events-none"
-        style={{ background: undefined }} />
+      <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-gradient-to-br opacity-[0.08] blur-2xl pointer-events-none" />
       <div className="flex items-start justify-between gap-3">
         <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl ${accent} shrink-0`}>
           <span className="text-lg font-semibold">{icon || label.charAt(0)}</span>

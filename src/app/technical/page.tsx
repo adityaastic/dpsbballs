@@ -7,13 +7,21 @@ import {
 import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
 import { getTechnical } from "@/lib/cms";
+import type { ManufacturingStep, MaterialRow } from "@/data/technical";
 
 export const metadata: Metadata = {
   title: "Technical Helpdesk",
 };
 
+type TechData = {
+  materialComparison: { intro: string; rows: MaterialRow[] };
+  manufacturingProcess: ManufacturingStep[];
+  ceramicCompareHeaders: string[];
+  ceramicCompareRows: string[][];
+};
+
 export default async function TechnicalPage() {
-  const data = await getTechnical();
+  const data = (await getTechnical()) as TechData;
 
   return (
     <>
@@ -40,7 +48,7 @@ export default async function TechnicalPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.materialComparison.rows.map((row: any, i: number) => (
+                {data.materialComparison.rows.map((row: MaterialRow, i: number) => (
                   <tr key={i}>
                     <td>{row.material}</td>
                     <td>{row.bestFor}</td>
@@ -77,7 +85,7 @@ export default async function TechnicalPage() {
             Typical precision ball process flow used across DSP product lines.
           </p>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.manufacturingProcess.map((item: any, i: number) => (
+            {data.manufacturingProcess.map((item: ManufacturingStep, i: number) => (
               <div
                 key={i}
                 className="border border-[var(--line)] bg-white p-5"
@@ -113,7 +121,7 @@ export default async function TechnicalPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.ceramicCompareRows.map((row: any[], i: number) => (
+                {data.ceramicCompareRows.map((row: string[], i: number) => (
                   <tr key={i}>
                     {row.map((cell, j) => (
                       <td key={j}>{cell}</td>

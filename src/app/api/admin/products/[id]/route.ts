@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import slugify from "slugify";
 import { dbConnect } from "@/lib/db";
 import { Product } from "@/models/Product";
@@ -18,8 +19,8 @@ export async function GET(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
     return NextResponse.json({ success: true, product });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -47,9 +48,15 @@ export async function PUT(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+    try {
+      revalidatePath("/products");
+      revalidatePath(`/products/${product.slug}`);
+      revalidatePath("/");
+    } catch {}
+
     return NextResponse.json({ success: true, product });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -69,7 +76,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

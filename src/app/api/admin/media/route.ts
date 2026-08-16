@@ -9,8 +9,8 @@ export async function GET() {
     await dbConnect();
     const media = await Media.find().sort({ createdAt: -1 }).lean();
     return NextResponse.json({ success: true, media });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
       if (r2Ready) {
         try {
           await uploadToR2(key, buffer, file.type || "application/octet-stream");
-        } catch (r2Err: any) {
-          console.warn("R2 upload failed, falling back to DB storage:", r2Err.message);
+        } catch {
+          console.warn("R2 upload failed, falling back to DB storage.");
           useDbFallback = true;
         }
       }
 
-      const createData: any = {
+      const createData: Record<string, unknown> = {
         filename: safeName,
         originalName: file.name,
         url: `/api/media/file/placeholder`,
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, media: uploaded }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

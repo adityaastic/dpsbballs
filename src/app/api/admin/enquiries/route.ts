@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const unreadOnly = searchParams.get("unread") === "true";
 
-    const query: any = {};
+    const query: Record<string, unknown> = {};
     if (type) query.type = type;
     if (unreadOnly) query.read = false;
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       unreadCount,
       total: enquiries.length,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

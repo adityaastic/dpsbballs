@@ -186,6 +186,32 @@ export default function Footer({ products, site }: { products: Product[]; site: 
         </div>
       </div>
 
+      {/* Accreditations Trust Marks */}
+      <div className="relative z-10 border-t border-white/8 bg-black/20">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-6">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[var(--orange)]" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-white/50">
+              ISO 9001:2015 Certified & Accredited Quality System
+            </span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-2.5 py-1 rounded border border-white/10 transition">
+              <img src="/images/certifications/gsci-cert.jpg" alt="GSCI" className="w-5 h-5 rounded-xs object-contain bg-white" />
+              <span className="text-[11px] font-semibold text-white/80">GSCI</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-2.5 py-1 rounded border border-white/10 transition">
+              <img src="/images/certifications/uaf-cert.jpg" alt="UAF CB-MS-5428" className="w-5 h-5 rounded-xs object-contain bg-white" />
+              <span className="text-[11px] font-semibold text-white/80">UAF (CB-MS-5428)</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-2.5 py-1 rounded border border-white/10 transition">
+              <img src="/images/certifications/iaf-cert.jpg" alt="IAF MLA" className="w-5 h-5 rounded-xs object-contain bg-white" />
+              <span className="text-[11px] font-semibold text-white/80">IAF MLA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Bottom bar */}
       <div className="relative z-10 border-t border-white/8">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-5 text-xs text-white/40 md:flex-row md:items-center md:justify-between md:px-6">

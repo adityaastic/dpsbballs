@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
+import { CertificationStrip } from "@/components/CertificationBadges";
 import { getPageContent, getProducts, getSiteData } from "@/lib/cms";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default async function AboutPage() {
     getSiteData(),
   ]);
 
-  const storyBody = pageData?.sections?.[0]?.body || `
+  const storyBody = (typeof pageData?.sections?.[0]?.body === "string" ? pageData.sections[0].body : "") || `
 DSP is one of the leading manufacturers of precision grade balls from high carbon steel & chrome steel, stainless steels, brass, copper, silver, tungsten carbide, ceramics and other materials against specific demand (glass, plastic, nitride and more).
 
 Products are made as per AFBMA, DIN & ISO grades — and as asked by customers, either from product drawings or after understanding technical requirements. We bring more than 25 years of focused experience in these products.
@@ -43,7 +44,7 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
         <div className="mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-2 md:px-6">
           <div>
             <h2 className="section-title">
-              {pageData?.sections?.[0]?.heading || "Our story"}
+              {(pageData?.sections?.[0]?.heading as string) || "Our story"}
             </h2>
             <div className="mt-5 space-y-4 text-[var(--muted)] leading-relaxed">
               {storyBody.split(/\n\n+/).map((para: string, i: number) => (
@@ -81,6 +82,7 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
           </div>
         </div>
       </section>
+      <CertificationStrip className="mt-8" />
     </>
   );
 }

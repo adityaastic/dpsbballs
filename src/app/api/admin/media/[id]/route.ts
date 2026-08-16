@@ -27,19 +27,19 @@ export async function DELETE(
     if (media.path && !hasDbData && r2Ready) {
       try {
         await deleteFromR2(media.path);
-      } catch (e: any) {
-        console.warn("R2 delete failed, proceeding with DB record deletion:", e.message);
+      } catch {
+        console.warn("R2 delete failed, proceeding with DB record deletion.");
       }
     } else if (media.path && !hasDbData) {
       try {
         await fs.unlink(media.path);
-      } catch (e) {}
+      } catch {}
     }
 
     await Media.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

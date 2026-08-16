@@ -33,13 +33,13 @@ const emptyProduct: ProductFormData = {
 };
 
 type Props = {
-  initial?: any;
+  initial?: (Partial<ProductFormData> & { _id?: string }) | null;
   mode: "new" | "edit";
 };
 
 export default function ProductForm({ initial, mode }: Props) {
   const [data, setData] = useState<ProductFormData>(
-    initial || emptyProduct
+    { ...emptyProduct, ...(initial || {}) }
   );
   const [submitting, setSubmitting] = useState(false);
   const { ToastContainer, show } = useToast();
@@ -78,7 +78,7 @@ export default function ProductForm({ initial, mode }: Props) {
       specs: d.specs.length > 1 ? d.specs.filter((_, x) => x !== i) : d.specs,
     }));
 
-  const tableSet = (tIdx: number, key: "title" | "headers" | "rows", value: any) =>
+  const tableSet = <K extends "title" | "headers" | "rows">(tIdx: number, key: K, value: ProductFormData["tables"][number][K]) =>
     setData((d) => {
       const next = [...d.tables];
       next[tIdx] = { ...next[tIdx], [key]: value };
@@ -161,7 +161,7 @@ export default function ProductForm({ initial, mode }: Props) {
     }
     setSubmitting(true);
 
-    const clean: any = { ...data };
+    const clean: ProductFormData = { ...data };
     clean.highlights = data.highlights.filter((x) => x.trim());
     clean.grades = data.grades.filter((x) => x.trim());
     clean.specs = data.specs.filter((s) => s.label.trim() && s.value.trim());
@@ -174,7 +174,7 @@ export default function ProductForm({ initial, mode }: Props) {
       }));
 
     try {
-      let res;
+      let res: Response;
       if (mode === "new") {
         res = await fetch("/api/admin/products", {
           method: "POST",
@@ -192,8 +192,8 @@ export default function ProductForm({ initial, mode }: Props) {
       if (!res.ok) throw new Error(json.error || "Failed");
       show(mode === "new" ? "Product created" : "Product saved", "success");
       setTimeout(() => router.push("/admin/products"), 400);
-    } catch (e: any) {
-      show(e.message, "error");
+    } catch {
+      show("Operation failed", "error");
     } finally {
       setSubmitting(false);
     }

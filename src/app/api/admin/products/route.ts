@@ -9,8 +9,8 @@ export async function GET() {
     await dbConnect();
     const products = await Product.find().sort({ order: 1, createdAt: -1 }).lean();
     return NextResponse.json({ success: true, products });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     await product.save();
 
     return NextResponse.json({ success: true, product }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

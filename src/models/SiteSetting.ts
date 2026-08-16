@@ -16,6 +16,14 @@ const NavLinkSchema = new mongoose.Schema({
   order: { type: Number, default: 0 },
 });
 
+const HeroSlideSchema = new mongoose.Schema({
+  desktopUrl: { type: String, default: "" },
+  mobileUrl: { type: String, default: "" },
+  headline: { type: String, default: "" },
+  subline: { type: String, default: "" },
+  order: { type: Number, default: 0 },
+});
+
 const SiteSettingSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true },
@@ -35,6 +43,7 @@ const SiteSettingSchema = new mongoose.Schema(
     regdOffice: AddressSchema,
     highlights: [HighlightSchema],
     navLinks: [NavLinkSchema],
+    heroSlides: [HeroSlideSchema],
     seoTitle: { type: String },
     seoDescription: { type: String },
   },

@@ -26,10 +26,10 @@ export default async function CareerPage() {
         <div className="mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-[0.85fr_1.15fr] md:px-6">
           <div>
             <h2 className="section-title">
-              {pageData?.sections?.[0]?.heading || "Why DSP"}
+              {(pageData?.sections?.[0]?.heading as string) || "Why DSP"}
             </h2>
             <p className="section-copy">
-              {pageData?.sections?.[0]?.body ||
+              {(pageData?.sections?.[0]?.body as string) ||
                 "Join a company with decades of ball manufacturing expertise, in-house process capability and a quality-first culture at Baddi, Himachal Pradesh."}
             </p>
             <ComingSoon

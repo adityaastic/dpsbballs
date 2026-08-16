@@ -29,8 +29,21 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
   const isLoginPage = pathname?.startsWith("/admin/login");
   const [logoDarkUrl, setLogoDarkUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarState, setSidebarState] = useState<{ open: boolean; pathname: string }>({
+    open: false,
+    pathname: "",
+  });
   const [unreadCount, setUnreadCount] = useState(0);
+  const [prevPathname, setPrevPathname] = useState<string>(pathname || "");
+
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname || "");
+    if (sidebarState.open) {
+      setSidebarState({ open: false, pathname: pathname || "" });
+    }
+  }
+
+  const sidebarOpen = sidebarState.open && sidebarState.pathname === pathname;
 
   useEffect(() => {
     if (!loading && !isLoginPage) {
@@ -54,10 +67,6 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
       router.replace("/admin/login");
     }
   }, [loading, user, router, isLoginPage]);
-
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
 
   if (loading) {
     return (
@@ -108,7 +117,7 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={() => setSidebarState(s => ({ ...s, open: false }))}
         />
       )}
 
@@ -139,7 +148,7 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
             <div className="text-[11px] text-slate-500 mt-2 font-medium uppercase tracking-wider">Admin Console</div>
           </Link>
           <button
-            onClick={() => setSidebarOpen(false)}
+            onClick={() => setSidebarState(s => ({ ...s, open: false }))}
             className="lg:hidden p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-white transition"
             aria-label="Close sidebar"
           >
@@ -221,7 +230,7 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
         <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/80">
           <div className="flex items-center gap-3 px-4 md:px-8 py-3.5">
             <button
-              onClick={() => setSidebarOpen(true)}
+              onClick={() => setSidebarState({ open: true, pathname: pathname || "" })}
               className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition"
               aria-label="Open menu"
             >

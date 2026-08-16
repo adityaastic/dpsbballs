@@ -496,7 +496,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ══════════════════════════════════════════════
-   HERO — deep orange → amber gradient
+   HERO — dynamic backgrounds + subtle warm vignette
 ══════════════════════════════════════════════ */
 .home-hero {
   position: relative;
@@ -505,49 +505,218 @@ a { color: inherit; text-decoration: none; }
   align-items: stretch;
   overflow: hidden;
   color: #fff;
+  background: #180800;
 }
 
-.home-hero-media {
+/* ── DESKTOP ── */
+.home-hero-media-desktop {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(118deg, rgba(124,45,18,0.97) 0%, rgba(154,56,14,0.82) 42%, rgba(194,65,12,0.45) 100%),
-    linear-gradient(180deg, #7c2d12 0%, #c2410c 50%, #ea580c 100%);
+  display: block;
 }
-.home-hero-media::before {
+@media (max-width: 767.98px) {
+  .home-hero-media-desktop { display: none; }
+}
+@media (min-width: 768px) {
+  .home-hero-media-mobile { display: none; }
+}
+
+/* Desktop Hero Slide Layers */
+.hero-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 8s ease-out;
+  will-change: transform, opacity;
+  z-index: 1;
+}
+.hero-layer.active {
+  opacity: 1;
+  transform: scale(1);
+  z-index: 2;
+  animation: hero-kenburns 20s ease-in-out infinite alternate;
+}
+
+@keyframes hero-kenburns {
+  0%   { transform: scale(1) translate3d(0, 0, 0); }
+  100% { transform: scale(1.08) translate3d(-1.5%, -1%, 0); }
+}
+
+/* Fallback background when no image uploaded */
+.hero-fallback-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 70% 60% at 75% 25%, rgba(251,191,36,0.40) 0%, transparent 60%),
+    radial-gradient(circle at 15% 80%, rgba(194,65,12,0.60) 0%, transparent 50%),
+    linear-gradient(135deg, #7c2d12 0%, #c2410c 45%, #ea580c 100%);
+}
+.hero-fallback-bg::before {
   content: "";
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(ellipse 60% 50% at 72% 38%, rgba(251,191,36,0.30), transparent 55%),
-    radial-gradient(circle at 12% 75%, rgba(194,65,12,0.45), transparent 40%),
+    radial-gradient(circle at 35% 35%, rgba(251,191,36,0.25), transparent 45%),
+    radial-gradient(circle at 75% 75%, rgba(249,115,22,0.35), transparent 50%),
     repeating-linear-gradient(
       -22deg,
       transparent 0, transparent 18px,
-      rgba(255,255,255,0.025) 18px, rgba(255,255,255,0.025) 19px
+      rgba(255,255,255,0.03) 18px, rgba(255,255,255,0.03) 19px
     );
   animation: hero-drift 25s linear infinite;
 }
-.home-hero-media::after {
+
+/* High-contrast warm vignette overlay to keep text ultra-readable while image shines through */
+.hero-overlay-gradients {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background:
+    linear-gradient(180deg, rgba(20,8,2,0.65) 0%, rgba(20,8,2,0.25) 38%, rgba(20,8,2,0.50) 70%, rgba(20,8,2,0.85) 100%),
+    linear-gradient(90deg, rgba(20,8,2,0.82) 0%, rgba(20,8,2,0.45) 45%, rgba(20,8,2,0.15) 75%, transparent 100%),
+    radial-gradient(ellipse 90% 80% at 70% 30%, rgba(249,115,22,0.15), transparent 60%);
+  pointer-events: none;
+}
+.hero-overlay-gradients::before {
   content: "";
   position: absolute;
-  width: 46vw;
-  height: 46vw;
-  right: -5%;
-  top: 5%;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      -22deg,
+      transparent 0, transparent 24px,
+      rgba(255,255,255,0.015) 24px, rgba(255,255,255,0.015) 25px
+    );
+  pointer-events: none;
+}
+.hero-overlay-gradients::after {
+  content: "";
+  position: absolute;
+  width: 42vw;
+  height: 42vw;
+  right: -4%;
+  top: 6%;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, rgba(251,191,36,0.12), transparent 65%);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: radial-gradient(circle at 40% 40%, rgba(251,191,36,0.10), transparent 65%);
+  border: 1px solid rgba(255,255,255,0.07);
   box-shadow:
-    0 0 0 55px rgba(255,200,100,0.04),
-    0 0 0 120px rgba(255,200,100,0.02),
-    inset 0 0 120px rgba(245,158,11,0.10);
+    0 0 0 45px rgba(255,200,100,0.03),
+    0 0 0 95px rgba(255,200,100,0.015);
   animation: hero-pulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── MOBILE CAROUSEL ── */
+.home-hero-media-mobile {
+  position: absolute;
+  inset: 0;
+  background: #180800;
+  overflow: hidden;
+}
+.mobile-track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(.34,1.56,.64,1);
+  will-change: transform;
+}
+.mobile-slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+.mobile-slide-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: hero-kenburns 16s ease-in-out infinite alternate;
+}
+.mobile-slide-fallback {
+  background:
+    radial-gradient(ellipse 70% 60% at 80% 20%, rgba(251,191,36,0.35), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 10% 90%, rgba(194,65,12,0.55), transparent 55%),
+    linear-gradient(180deg, #5c1a00 0%, #7c2d12 40%, #c2410c 80%, #ea580c 100%);
+}
+.mobile-slide-fallback::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 30% 30%, rgba(251,191,36,0.22), transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(249,115,22,0.35), transparent 45%),
+    repeating-linear-gradient(
+      115deg,
+      transparent 0, transparent 14px,
+      rgba(255,255,255,0.035) 14px, rgba(255,255,255,0.035) 15px
+    );
+  animation: hero-drift 25s linear infinite;
+}
+.mobile-slide-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(20,8,2,0.65) 0%, rgba(20,8,2,0.25) 28%, rgba(20,8,2,0.55) 68%, rgba(20,8,2,0.92) 100%),
+    radial-gradient(ellipse 90% 70% at 50% 40%, transparent 0%, rgba(20,8,2,0.40) 70%);
+}
+
+/* Carousel dots (used on mobile & desktop if multi-slide) */
+.hero-carousel-dots,
+.mobile-carousel-dots {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: clamp(1.25rem, 5vw, 2rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 15;
+  padding: 0 1rem;
+}
+.hero-carousel-dots-desktop {
+  justify-content: flex-start;
+  left: clamp(1.5rem, 5vw, 4rem);
+  right: auto;
+  bottom: 2rem;
+}
+.carousel-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.45);
+  border: 1px solid rgba(0,0,0,0.15);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.carousel-dot:hover {
+  background: rgba(255,255,255,0.85);
+  transform: scale(1.2);
+}
+.carousel-dot-active {
+  width: 2rem;
+  background: linear-gradient(90deg, var(--gold-light), var(--orange-light));
+  border-color: rgba(255,255,255,0.3);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.22),
+    0 2px 12px rgba(249,115,22,0.65);
+  transform: scale(1.05);
 }
 
 .home-hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;

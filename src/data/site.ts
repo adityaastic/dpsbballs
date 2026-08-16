@@ -41,3 +41,35 @@ export const navLinks = [
   { href: "/career", label: "Career" },
   { href: "/contact", label: "Contact" },
 ];
+
+export type HeroSlide = {
+  desktopUrl: string;
+  mobileUrl: string;
+  headline: string;
+  subline: string;
+  order: number;
+};
+
+export const heroSlides: HeroSlide[] = [
+  {
+    desktopUrl: "",
+    mobileUrl: "",
+    headline: "Precision Balls Manufacturing",
+    subline: "Since 1995 — engineered for bearing, gauging and industrial applications.",
+    order: 0,
+  },
+  {
+    desktopUrl: "",
+    mobileUrl: "",
+    headline: "AFBMA / DIN / ISO Grades",
+    subline: "Steel, stainless steel, carbide, ceramic, brass, copper and specialty materials.",
+    order: 1,
+  },
+  {
+    desktopUrl: "",
+    mobileUrl: "",
+    headline: "Global Quality · India Origin",
+    subline: "ISO 9001 certified · Self-certification status with reputed customers worldwide.",
+    order: 2,
+  },
+];

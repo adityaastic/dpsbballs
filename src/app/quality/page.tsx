@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
+import CertificationBadges from "@/components/CertificationBadges";
 import { getPageContent, getSiteData } from "@/lib/cms";
 
 export const metadata: Metadata = {
@@ -43,7 +44,7 @@ export default async function QualityPage() {
   ]);
 
   const policy =
-    pageData?.sections?.[0]?.body ||
+    (pageData?.sections?.[0]?.body as string) ||
     "We at DSP Precision Products Pvt. Ltd. are committed to manufacture and supply Precision Balls of consistent quality, meeting customer needs through continual improvement of Quality Management System by our dedicated team work.";
 
   return (
@@ -71,11 +72,10 @@ export default async function QualityPage() {
               <li>Customer drawings & special grades supported</li>
             </ul>
           </div>
-          <ComingSoon
-            label="ISO certificate image coming soon"
-            aspect="square"
-            className="border border-[var(--line)]"
-          />
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-2xl bg-gradient-to-br from-[var(--orange)]/10 to-[var(--gold)]/10 blur-2xl" aria-hidden />
+            <CertificationBadges className="relative" />
+          </div>
         </div>
       </section>
 

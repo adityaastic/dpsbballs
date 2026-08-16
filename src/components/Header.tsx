@@ -57,12 +57,26 @@ function buildGroups(links: NavLink[]): { standalone: NavLink[]; groups: Dropdow
 
 export default function Header({ navLinks, site }: Props) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileSub, setMobileSub]   = useState<string | null>(null);
   const [scrolled, setScrolled]     = useState(false);
   const [isAdmin, setIsAdmin]       = useState(false);
   const [openGroup, setOpenGroup]   = useState<string | null>(null);
+  const [mobileMenuState, setMobileMenuState] = useState<{ open: boolean; sub: string | null; pathname: string }>({
+    open: false,
+    sub: null,
+    pathname: "",
+  });
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prevPathname, setPrevPathname] = useState<string>(pathname);
+
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    if (mobileMenuState.open || mobileMenuState.sub !== null) {
+      setMobileMenuState({ open: false, sub: null, pathname });
+    }
+  }
+
+  const mobileOpen = mobileMenuState.open && mobileMenuState.pathname === pathname;
+  const mobileSub = mobileMenuState.pathname === pathname ? mobileMenuState.sub : null;
 
   const mobile   = site.mobile   || "";
   const whatsapp = site.whatsapp || mobile;
@@ -77,8 +91,6 @@ export default function Header({ navLinks, site }: Props) {
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
-
-  useEffect(() => { setMobileOpen(false); setMobileSub(null); }, [pathname]);
 
   useEffect(() => {
     fetch("/api/admin/auth/me").then(r => r.ok && r.json()).then(d => d?.user && setIsAdmin(true)).catch(() => {});
@@ -247,7 +259,7 @@ export default function Header({ navLinks, site }: Props) {
 
           <button
             type="button"
-            onClick={() => setMobileOpen(v => !v)}
+            onClick={() => setMobileMenuState(s => ({ ...s, open: !s.open, pathname }))}
             className={`menu-btn lg:hidden ${mobileOpen ? "menu-btn-open" : ""}`}
             aria-expanded={mobileOpen}
             aria-label="Toggle menu"
@@ -278,7 +290,7 @@ export default function Header({ navLinks, site }: Props) {
                 <div key={g.label} className="border-b border-[var(--line)]">
                   <button
                     type="button"
-                    onClick={() => setMobileSub(subOpen ? null : g.label)}
+                    onClick={() => setMobileMenuState(s => ({ ...s, sub: s.sub === g.label ? null : g.label }))}
                     className={`mobile-nav-item mobile-nav-item-btn ${active && !subOpen ? "mobile-nav-item-active" : ""}`}
                     aria-expanded={subOpen}
                   >

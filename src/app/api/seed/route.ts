@@ -9,9 +9,9 @@ export async function GET() {
       success: true,
       message: "Database seeded successfully. Default admin: admin / Admin@12345",
     });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
-      { success: false, error: error.message || "Seed failed" },
+      { success: false, error: "Seed failed" },
       { status: 500 }
     );
   }

@@ -20,7 +20,15 @@ export default function AdminSettingsPage() {
     try {
       const res = await fetch("/api/admin/settings");
       const json = await res.json();
-      setData(json.settings);
+      const s = json.settings || {};
+      if (!s.heroSlides || !Array.isArray(s.heroSlides) || s.heroSlides.length === 0) {
+        s.heroSlides = [
+          { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 0 },
+          { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 1 },
+          { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
+        ];
+      }
+      setData(s);
     } finally {
       setLoading(false);
     }
@@ -104,6 +112,49 @@ export default function AdminSettingsPage() {
   const navRemove = () =>
     setData((d: any) => ({ ...d, navLinks: (d.navLinks || []).slice(0, -1) }));
 
+  const uploadHeroImage = async (file: File, idx: number, field: "desktopUrl" | "mobileUrl") => {
+    try {
+      const form = new FormData();
+      form.append("files", file);
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        body: form,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Upload failed");
+      if (json.media && json.media.length > 0) {
+        heroSlideSet(idx, field, json.media[0].url);
+        show("Uploaded", "success");
+      }
+    } catch (e: any) {
+      show(e.message, "error");
+    }
+  };
+  const heroSlideSet = (i: number, field: "desktopUrl" | "mobileUrl" | "headline" | "subline" | "order", v: any) =>
+    setData((d: any) => {
+      const heroSlides = Array.isArray(d?.heroSlides) ? [...d.heroSlides] : [];
+      while (heroSlides.length <= i) {
+        heroSlides.push({ desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: heroSlides.length });
+      }
+      heroSlides[i] = {
+        desktopUrl: "",
+        mobileUrl: "",
+        headline: "",
+        subline: "",
+        order: i,
+        ...heroSlides[i],
+        [field]: v,
+      };
+      return { ...d, heroSlides };
+    });
+  const heroSlideAdd = () =>
+    setData((d: any) => ({
+      ...d,
+      heroSlides: [...(d.heroSlides || []), { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: (d.heroSlides?.length || 0) }],
+    }));
+  const heroSlideRemove = () =>
+    setData((d: any) => ({ ...d, heroSlides: (d.heroSlides || []).slice(0, -1) }));
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -113,6 +164,17 @@ export default function AdminSettingsPage() {
         (x: any) => x.label && x.value
       );
       clean.navLinks = (clean.navLinks || []).filter((x: any) => x.href && x.label);
+      if (clean.heroSlides && Array.isArray(clean.heroSlides)) {
+        clean.heroSlides = clean.heroSlides
+          .filter((s: any) => s !== null && typeof s === "object")
+          .map((s: any, idx: number) => ({
+            desktopUrl: s.desktopUrl || "",
+            mobileUrl: s.mobileUrl || "",
+            headline: s.headline || "",
+            subline: s.subline || "",
+            order: typeof s.order === "number" ? s.order : idx,
+          }));
+      }
 
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
@@ -520,6 +582,171 @@ export default function AdminSettingsPage() {
               </div>
             )
           )}
+        </div>
+      </AdminCard>
+
+      <AdminCard className="p-6 space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-semibold text-slate-900">Homepage Hero Slides</h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Upload desktop (≥1800×900) and mobile (≥900×1200) images for each slide. Shown as layered composite on desktop and swipe carousel on mobile.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={heroSlideRemove}
+              className="text-xs px-3 py-1.5 border border-slate-300 rounded"
+            >
+              − Remove
+            </button>
+            <button
+              type="button"
+              onClick={heroSlideAdd}
+              className="text-xs px-3 py-1.5 bg-slate-900 text-white rounded"
+            >
+              + Add Slide
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {((data.heroSlides && data.heroSlides.length > 0 ? data.heroSlides : [
+            { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 0 },
+            { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 1 },
+            { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
+          ]) as any[]).map((slide, i) => (
+            <div key={i} className="border border-slate-200 rounded-xl p-5 space-y-4 bg-gradient-to-br from-slate-50/60 to-white">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-600/10 text-amber-700 text-xs font-bold tracking-[0.12em] uppercase">
+                  <span className="w-5 h-5 rounded-full bg-amber-600 text-white grid place-items-center text-[0.65rem] font-bold">
+                    {i + 1}
+                  </span>
+                  Hero Slide {i + 1}
+                </span>
+                <div className="w-24">
+                  <Field label="Order">
+                    <input
+                      type="number"
+                      className={inputClass()}
+                      value={slide.order ?? i}
+                      onChange={(e) => heroSlideSet(i, "order", parseInt(e.target.value) || i)}
+                    />
+                  </Field>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <Field label="Desktop Image (1800×900 recommended)">
+                    <div className={`border-2 border-dashed border-slate-300 rounded-lg p-4 text-center ${slide.desktopUrl ? "bg-white" : "bg-slate-50"}`}>
+                      {slide.desktopUrl ? (
+                        <div className="space-y-3">
+                          <div className="relative aspect-[16/9] rounded-md overflow-hidden border border-slate-200">
+                            <img src={slide.desktopUrl} alt={`Desktop ${i + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex gap-2 justify-center">
+                            <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
+                              Replace
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "desktopUrl")}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => heroSlideSet(i, "desktopUrl", "")}
+                              className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="block cursor-pointer py-8">
+                          <div className="text-3xl opacity-30 mb-2">🖼️</div>
+                          <div className="text-sm text-slate-600 mb-1">Upload desktop background</div>
+                          <div className="text-xs text-slate-400">JPG / PNG / WebP · ≥1800×900px</div>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "desktopUrl")}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </Field>
+                </div>
+
+                <div>
+                  <Field label="Mobile Image (900×1200 recommended)">
+                    <div className={`border-2 border-dashed border-slate-300 rounded-lg p-4 text-center ${slide.mobileUrl ? "bg-white" : "bg-slate-50"}`}>
+                      {slide.mobileUrl ? (
+                        <div className="space-y-3">
+                          <div className="relative aspect-[3/4] max-w-[180px] mx-auto rounded-md overflow-hidden border border-slate-200">
+                            <img src={slide.mobileUrl} alt={`Mobile ${i + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex gap-2 justify-center">
+                            <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
+                              Replace
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "mobileUrl")}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => heroSlideSet(i, "mobileUrl", "")}
+                              className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="block cursor-pointer py-8">
+                          <div className="text-3xl opacity-30 mb-2">📱</div>
+                          <div className="text-sm text-slate-600 mb-1">Upload mobile background</div>
+                          <div className="text-xs text-slate-400">Portrait · JPG / PNG · ≥900×1200px</div>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "mobileUrl")}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </Field>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5 pt-1">
+                <Field label="Headline (optional)">
+                  <input
+                    className={inputClass()}
+                    value={slide.headline || ""}
+                    onChange={(e) => heroSlideSet(i, "headline", e.target.value)}
+                    placeholder="e.g. Precision Balls Manufacturing"
+                  />
+                </Field>
+                <Field label="Subline / caption (optional)">
+                  <input
+                    className={inputClass()}
+                    value={slide.subline || ""}
+                    onChange={(e) => heroSlideSet(i, "subline", e.target.value)}
+                    placeholder="e.g. Since 1995 — engineered for bearing & gauging applications."
+                  />
+                </Field>
+              </div>
+            </div>
+          ))}
         </div>
       </AdminCard>
 

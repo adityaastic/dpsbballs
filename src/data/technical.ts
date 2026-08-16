@@ -1,4 +1,25 @@
-export const manufacturingProcess = [
+export type ManufacturingStep = {
+  step: string;
+  title: string;
+  text: string;
+};
+
+export type MaterialRow = {
+  material: string;
+  bestFor: string;
+  strengths: string;
+  notes: string;
+};
+
+export type ClientTestimonial = {
+  type: string;
+  author: string;
+  role: string;
+  quote: string;
+  detail: string;
+};
+
+export const manufacturingProcess: ManufacturingStep[] = [
   {
     step: "01",
     title: "Heading",
@@ -31,7 +52,7 @@ export const manufacturingProcess = [
   },
 ];
 
-export const materialComparison = {
+export const materialComparison: { intro: string; rows: MaterialRow[] } = {
   intro:
     "There are two main technical considerations when purchasing balls: (1) type of material, and (2) dimensional accuracy required. Use this comparison as a starting guide, then confirm grades with our sales team.",
   rows: [
@@ -80,7 +101,7 @@ export const materialComparison = {
   ],
 };
 
-export const clientTestimonials = [
+export const clientTestimonials: ClientTestimonial[] = [
   {
     type: "Repeat Client",
     author: "Kerry Field",
@@ -101,7 +122,7 @@ export const clientTestimonials = [
   },
 ];
 
-export const ceramicCompareHeaders = [
+export const ceramicCompareHeaders: string[] = [
   "Property",
   "Si₃N₄",
   "ZrO₂",
@@ -111,7 +132,7 @@ export const ceramicCompareHeaders = [
   "Stainless",
 ];
 
-export const ceramicCompareRows = [
+export const ceramicCompareRows: string[][] = [
   ["Density (g/cm³)", "3.2–3.3", "6.00", "3.1–3.2", "3.95", "7.85", "7.90"],
   ["Linear expansion (10⁻⁶/K)", "3.20", "10.50", "4.50", "8.50", "10.0", "11.0"],
   ["Young's modulus (GPa)", "300–320", "210", "350", "380", "208", "200"],

@@ -6,7 +6,7 @@ import { SiteSetting } from "@/models/SiteSetting";
 import { TechnicalContent } from "@/models/TechnicalContent";
 import { PageContent } from "@/models/PageContent";
 import { products as staticProducts } from "@/data/products";
-import { site as staticSite, navLinks as staticNav } from "@/data/site";
+import { site as staticSite, navLinks as staticNav, heroSlides as staticHeroSlides } from "@/data/site";
 import {
   manufacturingProcess,
   materialComparison,
@@ -55,6 +55,7 @@ export async function seedDatabase() {
       regdOffice: staticSite.regdOffice,
       highlights: staticSite.highlights,
       navLinks: staticNav.map((n, i) => ({ ...n, order: i })),
+      heroSlides: staticHeroSlides.map((h, i) => ({ ...h, order: i })),
       seoTitle: "DSP Precision Products | Precision Balls Manufacturer",
       seoDescription:
         "DSP Precision Products Pvt. Ltd. — manufacturer & exporter of steel, stainless steel, carbide, ceramic, brass, copper, gauge and modified precision balls from Baddi, India.",

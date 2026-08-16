@@ -43,6 +43,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 
@@ -63,8 +64,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         setError(data.error || "Login failed");
         return false;
       }
-    } catch (e: any) {
-      setError(e.message || "Network error");
+    } catch {
+      setError("Network error");
       return false;
     } finally {
       setLoading(false);

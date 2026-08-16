@@ -1,3 +1,10 @@
+export type SpecItem = { label: string; value: string };
+export type TableItem = {
+  title: string;
+  headers: string[];
+  rows: string[][];
+};
+
 export type Product = {
   slug: string;
   title: string;
@@ -6,12 +13,8 @@ export type Product = {
   imageUrl?: string;
   highlights?: string[];
   grades?: string[];
-  specs?: { label: string; value: string }[];
-  tables?: {
-    title: string;
-    headers: string[];
-    rows: string[][];
-  }[];
+  specs?: SpecItem[];
+  tables?: TableItem[];
 };
 
 export const products: Product[] = [

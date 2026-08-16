@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         name: admin.name,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

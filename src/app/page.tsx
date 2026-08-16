@@ -1,31 +1,55 @@
 import Link from "next/link";
 import ComingSoon from "@/components/ComingSoon";
 import ProductCard from "@/components/ProductCard";
-import HeroCTA from "@/components/HeroCTA";
-import { getProducts, getSiteData } from "@/lib/cms";
+import HomeHero from "@/components/HomeHero";
+import CertificationBadges, { CertificationStrip } from "@/components/CertificationBadges";
+import { getProducts, getSiteData, type HeroSlide } from "@/lib/cms";
+import type { Product } from "@/data/products";
+
+type SiteHighlight = { label: string; value: string };
+type SiteData = {
+  name: string;
+  shortName: string;
+  tagline: string;
+  logoUrl?: string;
+  logoDarkUrl?: string;
+  faviconUrl?: string;
+  email: string;
+  phoneWork?: string;
+  phoneRegd?: string;
+  phoneFax?: string;
+  mobile?: string;
+  whatsapp?: string;
+  highlights: SiteHighlight[];
+};
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function HomePage() {
-  const [{ site }, products] = await Promise.all([getSiteData(), getProducts()]);
+  const [{ site, heroSlides }, products] = await Promise.all([
+    getSiteData() as Promise<{ site: SiteData; heroSlides: HeroSlide[]; navLinks: { href: string; label: string }[]; seo: { title: string; description: string } }>,
+    getProducts() as Promise<Product[]>,
+  ]);
+
+  const slides: HeroSlide[] = heroSlides?.length
+    ? [...heroSlides].sort((a: HeroSlide, b: HeroSlide) => (a.order || 0) - (b.order || 0))
+    : [
+        { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 0 },
+        { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 1 },
+        { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
+      ];
 
   return (
     <>
-      {/* ═══════════════════════════════════════
-          HERO
-      ═══════════════════════════════════════ */}
-      <section className="home-hero">
-        <div className="home-hero-media" aria-hidden />
-        <div className="home-hero-content">
-          <HeroCTA tagline={site.tagline} />
-        </div>
-      </section>
+      <HomeHero slides={slides} tagline={site.tagline} />
 
-      {/* ═══════════════════════════════════════
-          STATS
-      ═══════════════════════════════════════ */}
+      <CertificationStrip />
+
       <section className="section-tight">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="stat-strip">
-            {site.highlights.map((item: any) => (
+            {site.highlights.map((item: SiteHighlight) => (
               <div key={item.label} className="stat-item">
                 <strong>{item.value}</strong>
                 <span>{item.label}</span>
@@ -35,9 +59,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          ABOUT STRIP
-      ═══════════════════════════════════════ */}
       <section className="section">
         <div className="mx-auto grid max-w-6xl gap-12 px-4 md:grid-cols-2 md:items-center md:px-6">
           <div>
@@ -67,9 +88,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          PRODUCTS
-      ═══════════════════════════════════════ */}
       <section className="section bg-[var(--surface)]">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="flex flex-wrap items-end justify-between gap-6">
@@ -83,18 +101,15 @@ export default async function HomePage() {
             <Link href="/products" className="btn btn-primary shrink-0">View all products</Link>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.slice(0, 6).map(product => (
+            {products.slice(0, 6).map((product: Product) => (
               <ProductCard key={product.slug} product={product} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          QUALITY + CERT
-      ═══════════════════════════════════════ */}
       <section className="section">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-[1fr_1.1fr] md:px-6">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 lg:grid-cols-[1fr_1.1fr] md:px-6 items-center">
           <div className="bg-white border border-[var(--line)] rounded-2xl p-8 md:p-10 shadow-[var(--shadow-md)]">
             <p className="eyebrow" style={{ color: "var(--copper)" }}>Quality circle</p>
             <h2 className="section-title mt-4">Committed to total customer satisfaction</h2>
@@ -111,16 +126,12 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="relative">
-              <div className="absolute -inset-4 rounded-2xl bg-gradient-to-br from-[var(--orange)]/10 to-[var(--gold)]/10 blur-2xl" aria-hidden />
-            <ComingSoon label="Certificate / lab image coming soon" aspect="wide"
-              className="relative border border-[var(--line)] min-h-[240px] shadow-[var(--shadow-lg)]" />
+            <div className="absolute -inset-4 rounded-2xl bg-gradient-to-br from-[var(--orange)]/10 to-[var(--gold)]/10 blur-2xl" aria-hidden />
+            <CertificationBadges className="relative" />
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          CARDS GRID
-      ═══════════════════════════════════════ */}
       <section className="section pt-0">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="grid gap-5 md:grid-cols-2">
@@ -133,7 +144,7 @@ export default async function HomePage() {
                 href: "/technical#enquiry", tag: "Helpdesk", title: "New or experienced buyer forms",
                 desc: "Submit technical requirements with size, grade and quantity."
               },
-            ].map(card => (
+            ].map((card) => (
               <Link key={card.href} href={card.href}
                 className="group bg-white border border-[var(--line)] rounded-2xl p-8 transition-all duration-300 hover:border-[var(--steel)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1">
                 <p className="eyebrow" style={{ color: "var(--copper)" }}>{card.tag}</p>
@@ -151,17 +162,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          CTA BANNER
-      ═══════════════════════════════════════ */}
       <section className="section pt-0">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="relative overflow-hidden rounded-2xl px-8 py-14 md:px-14 text-white shadow-[var(--shadow-xl)]" style={{ background: "linear-gradient(135deg,#7c2d12 0%,#c2410c 55%,#ea580c 100%)" }}>
-            {/* decorative glows */}
             <div aria-hidden className="pointer-events-none absolute inset-0">
               <div className="absolute top-0 right-0 w-96 h-96 translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--gold)]/25 blur-3xl" />
               <div className="absolute bottom-0 left-0 w-64 h-64 -translate-x-1/3 translate-y-1/3 rounded-full bg-[var(--orange-mid)]/30 blur-2xl" />
-              {/* grid lines */}
               <div className="absolute inset-0" style={{
                 backgroundImage: "repeating-linear-gradient(90deg,transparent 0,transparent 44px,rgba(255,255,255,0.025) 44px,rgba(255,255,255,0.025) 45px)"
               }} />

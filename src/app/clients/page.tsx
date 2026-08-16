@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
 import { getPageContent, getTechnical } from "@/lib/cms";
+import type { ClientTestimonial } from "@/data/technical";
 
 export const metadata: Metadata = {
   title: "Client Appreciation",
@@ -29,7 +30,7 @@ export default async function ClientsPage() {
 
       <section className="section">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 md:px-6">
-          {tech.clientTestimonials.map((item: any, i: number) => (
+          {(tech.clientTestimonials as ClientTestimonial[]).map((item: ClientTestimonial, i: number) => (
             <article
               key={i}
               className="grid gap-6 border border-[var(--line)] bg-white p-6 md:grid-cols-[1fr_0.7fr] md:p-8"

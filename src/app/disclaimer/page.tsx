@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default async function DisclaimerPage() {
   const pageData = await getPageContent("disclaimer");
   const body =
-    pageData?.sections?.[0]?.body ||
+    (pageData?.sections?.[0]?.body as string) ||
     `Various information & data provided on this site has been gathered from different catalogues, books, periodicals and related references. We do not claim it to be fully correct and authentic in every respect.
 
 To the best of our knowledge it is correct for the purpose of giving an idea of the quality of our products and only to assist you in choosing a direction. For critical applications, please confirm specifications directly with DSP before ordering.`;

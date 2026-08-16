@@ -51,7 +51,7 @@ export async function GET(
     }
 
     return NextResponse.json({ error: "File not found" }, { status: 404 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

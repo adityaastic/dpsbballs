@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { dbConnect } from "@/lib/db";
 import { SiteSetting } from "@/models/SiteSetting";
 import { requireAuth } from "@/lib/authGuard";
@@ -13,11 +14,11 @@ export async function GET() {
         name: "DSP Precision Products Pvt. Ltd.",
         navLinks: [],
         highlights: [],
-      } as any;
+      };
     }
     return NextResponse.json({ success: true, settings });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
@@ -35,8 +36,15 @@ export async function PUT(request: NextRequest) {
       { new: true, upsert: true, runValidators: true }
     );
 
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+    } catch (e) {
+      console.warn("Revalidation notice:", e);
+    }
+
     return NextResponse.json({ success: true, settings });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
