@@ -610,3 +610,25 @@ a { color: inherit; text-decoration: none; }
   0%,100% { transform: scale(1);    opacity: 0.65; }
   50%     { transform: scale(1.04); opacity: 1; }
 }
+
+/* ══════════════════════════════════════════════
+   ADMIN UI UTILITIES
+══════════════════════════════════════════════ */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

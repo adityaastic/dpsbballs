@@ -10,6 +10,7 @@ const MediaSchema = new mongoose.Schema(
     size: { type: Number },
     folder: { type: String, default: "general" },
     alt: { type: String },
+    data: { type: Buffer, select: false },
   },
   { timestamps: true }
 );

@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 import { dbConnect } from "@/lib/db";
 import { Media } from "@/models/Media";
 import { requireAuth } from "@/lib/authGuard";
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-
-async function ensureDir() {
-  try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  } catch (e) {}
-}
+import { getPublicUrl, uploadToR2, isR2Configured } from "@/lib/r2";
 
 export async function GET() {
   try {
@@ -28,7 +19,6 @@ export async function POST(request: NextRequest) {
     const { response: authRes } = await requireAuth("editor");
     if (authRes) return authRes;
 
-    await ensureDir();
     const contentType = request.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
@@ -47,24 +37,51 @@ export async function POST(request: NextRequest) {
 
     await dbConnect();
     const uploaded = [];
+    const r2Ready = isR2Configured();
 
     for (const file of files) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const fullPath = path.join(UPLOAD_DIR, safeName);
-      await fs.writeFile(fullPath, buffer);
+      const key = `${folder}/${safeName}`;
 
-      const url = `/uploads/${safeName}`;
-      const media = await Media.create({
+      let useDbFallback = !r2Ready;
+
+      if (r2Ready) {
+        try {
+          await uploadToR2(key, buffer, file.type || "application/octet-stream");
+        } catch (r2Err: any) {
+          console.warn("R2 upload failed, falling back to DB storage:", r2Err.message);
+          useDbFallback = true;
+        }
+      }
+
+      const createData: any = {
         filename: safeName,
         originalName: file.name,
-        url,
-        path: fullPath,
+        url: `/api/media/file/placeholder`,
+        path: key,
         mimeType: file.type,
         size: file.size,
         folder,
-      });
-      uploaded.push(media);
+      };
+
+      if (useDbFallback) {
+        createData.data = buffer;
+      }
+
+      const media = await Media.create(createData);
+
+      if (useDbFallback) {
+        media.url = `/api/media/file/${media._id}`;
+      } else {
+        const publicUrl = getPublicUrl(key);
+        media.url = publicUrl || `/api/media/file/${media._id}`;
+      }
+      await media.save();
+
+      const obj = media.toObject();
+      delete obj.data;
+      uploaded.push(obj);
     }
 
     return NextResponse.json({ success: true, media: uploaded }, { status: 201 });
