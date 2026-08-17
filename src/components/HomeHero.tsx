@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import HeroCTA from "@/components/HeroCTA";
 import type { HeroSlide } from "@/lib/cms";
 
-function HomeHero({ slides, tagline }: { slides: HeroSlide[]; tagline: string }) {
+function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
@@ -12,10 +11,22 @@ function HomeHero({ slides, tagline }: { slides: HeroSlide[]; tagline: string })
 
   // Normalize slides
   const normalizedSlides = slides && slides.length > 0 ? slides : [];
-  const count = normalizedSlides.length;
+  const primarySlide = normalizedSlides[0];
+  const desktopUrl = primarySlide?.desktopUrl || primarySlide?.mobileUrl || "";
 
-  const hasAnyDesktopImage = normalizedSlides.some((s) => Boolean(s.desktopUrl || s.mobileUrl));
-  const hasAnyMobileImage = normalizedSlides.some((s) => Boolean(s.mobileUrl || s.desktopUrl));
+  // Ensure mobile view has at least 3 slides
+  let mobileSlides = [...normalizedSlides];
+  while (mobileSlides.length > 0 && mobileSlides.length < 3) {
+    mobileSlides = [...mobileSlides, ...normalizedSlides].slice(0, 3);
+  }
+  if (mobileSlides.length === 0) {
+    mobileSlides = [
+      { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 0 },
+      { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 1 },
+      { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
+    ];
+  }
+  const count = mobileSlides.length;
 
   useEffect(() => {
     if (count <= 1) return;
@@ -57,43 +68,24 @@ function HomeHero({ slides, tagline }: { slides: HeroSlide[]; tagline: string })
 
   return (
     <section className="home-hero">
-      {/* DESKTOP BACKGROUND MEDIA */}
-      <div className="home-hero-media home-hero-media-desktop" aria-hidden>
-        {!hasAnyDesktopImage && <div className="hero-fallback-bg" />}
-        {normalizedSlides.map((s, i) => {
-          const url = s.desktopUrl || s.mobileUrl;
-          if (!url) return null;
-          const isActive = i === activeIdx;
-          return (
-            <div
-              key={`desktop-${i}`}
-              className={`hero-layer ${isActive ? "active" : ""}`}
-              style={{ backgroundImage: `url("${url}")` }}
+      {/* DESKTOP SINGLE IMAGE (NO SLIDER) */}
+      <div className="home-hero-media home-hero-media-desktop">
+        {desktopUrl ? (
+          <div className="hero-layer active">
+            <img
+              src={desktopUrl}
+              alt="Desktop Hero Banner"
+              className="w-full h-full object-contain md:object-fill"
             />
-          );
-        })}
-        <div className="hero-overlay-gradients" aria-hidden />
-
-        {count > 1 && hasAnyDesktopImage && (
-          <div className="hero-carousel-dots hero-carousel-dots-desktop" role="tablist" aria-label="Hero slides">
-            {normalizedSlides.map((_, i) => (
-              <button
-                key={`dot-desk-${i}`}
-                role="tab"
-                aria-selected={activeIdx === i}
-                aria-label={`Go to slide ${i + 1}`}
-                onClick={() => goTo(i)}
-                className={`carousel-dot ${activeIdx === i ? "carousel-dot-active" : ""}`}
-              />
-            ))}
           </div>
+        ) : (
+          <div className="hero-fallback-bg" />
         )}
       </div>
 
-      {/* MOBILE BACKGROUND MEDIA */}
+      {/* MOBILE SLIDER (3+ SLIDES) */}
       <div
         className="home-hero-media home-hero-media-mobile"
-        aria-hidden
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -105,19 +97,19 @@ function HomeHero({ slides, tagline }: { slides: HeroSlide[]; tagline: string })
             transitionDuration: "650ms",
           }}
         >
-          {normalizedSlides.map((s, i) => {
+          {mobileSlides.map((s, i) => {
             const url = s.mobileUrl || s.desktopUrl;
             return (
               <div key={`mob-${i}`} className="mobile-slide">
                 {url ? (
-                  <div
-                    className="mobile-slide-bg"
-                    style={{ backgroundImage: `url("${url}")` }}
+                  <img
+                    src={url}
+                    alt={`Mobile banner ${i + 1}`}
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="mobile-slide-bg mobile-slide-fallback" />
                 )}
-                <div className="mobile-slide-vignette" aria-hidden />
               </div>
             );
           })}
@@ -125,7 +117,7 @@ function HomeHero({ slides, tagline }: { slides: HeroSlide[]; tagline: string })
 
         {count > 1 && (
           <div className="mobile-carousel-dots" role="tablist" aria-label="Hero slides">
-            {normalizedSlides.map((_, i) => (
+            {mobileSlides.map((_, i) => (
               <button
                 key={`dot-mob-${i}`}
                 role="tab"
@@ -137,11 +129,6 @@ function HomeHero({ slides, tagline }: { slides: HeroSlide[]; tagline: string })
             ))}
           </div>
         )}
-      </div>
-
-      {/* HERO FOREGROUND CONTENT */}
-      <div className="home-hero-content">
-        <HeroCTA tagline={tagline} />
       </div>
     </section>
   );

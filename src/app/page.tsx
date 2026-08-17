@@ -2,7 +2,7 @@ import Link from "next/link";
 import ComingSoon from "@/components/ComingSoon";
 import ProductCard from "@/components/ProductCard";
 import HomeHero from "@/components/HomeHero";
-import CertificationBadges, { CertificationStrip } from "@/components/CertificationBadges";
+import CertificationBadges from "@/components/CertificationBadges";
 import { getProducts, getSiteData, type HeroSlide } from "@/lib/cms";
 import type { Product } from "@/data/products";
 
@@ -43,8 +43,6 @@ export default async function HomePage() {
   return (
     <>
       <HomeHero slides={slides} tagline={site.tagline} />
-
-      <CertificationStrip />
 
       <section className="section-tight">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
