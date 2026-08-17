@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
-import { CertificationStrip } from "@/components/CertificationBadges";
 import { getPageContent, getProducts, getSiteData } from "@/lib/cms";
 
 export const metadata: Metadata = {
@@ -82,7 +81,104 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
           </div>
         </div>
       </section>
-      <CertificationStrip className="mt-8" />
+
+      {/* Certified Quality & Global Accreditation Highlighted Section */}
+      <section className="section bg-gradient-to-b from-[var(--surface)] to-white py-16">
+        <div className="mx-auto max-w-6xl px-4 md:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[var(--orange)]/10 text-[var(--orange-deep)] border border-[var(--orange)]/20 shadow-xs mb-3">
+              <span className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
+              Certified Quality &amp; Global Accreditation
+            </span>
+            <h2 className="section-title mt-2">
+              ISO 9001:2015 Quality &amp; International Accreditations
+            </h2>
+            <p className="section-copy mt-3">
+              Our precision manufacturing operations adhere strictly to global quality management systems and international accreditation frameworks.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* GSCI */}
+            <div className="group relative bg-white border border-[var(--line)] rounded-2xl p-6 transition-all duration-300 hover:border-[var(--orange)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1.5 flex flex-col items-center text-center">
+              <div className="w-28 h-28 rounded-xl p-3 bg-white shadow-md border border-slate-100 flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105">
+                <img
+                  src="/images/certifications/gsci-cert.jpg"
+                  alt="GSCI Certification Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="inline-block px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wider bg-orange-50 text-[var(--orange-deep)] border border-orange-200/60 mb-2">
+                GSCI Certified
+              </span>
+              <h3 className="font-display text-xl text-[var(--ink)]">GSCI</h3>
+              <p className="text-xs text-[var(--muted)] mt-1.5 leading-relaxed">
+                Global Standards Certification
+              </p>
+              <div className="mt-5 pt-4 border-t border-[var(--line)]/50 w-full text-left text-xs text-[var(--muted)] space-y-1.5">
+                <p className="flex items-center gap-2">
+                  <span className="text-[var(--orange)] font-bold">✓</span> International Quality Compliance
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-[var(--orange)] font-bold">✓</span> Rigorous Audit Certification
+                </p>
+              </div>
+            </div>
+
+            {/* UAF */}
+            <div className="group relative bg-white border border-[var(--line)] rounded-2xl p-6 transition-all duration-300 hover:border-[var(--orange)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1.5 flex flex-col items-center text-center">
+              <div className="w-28 h-28 rounded-xl p-3 bg-white shadow-md border border-slate-100 flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105">
+                <img
+                  src="/images/certifications/uaf-cert.jpg"
+                  alt="United Accreditation Foundation CB-MS-5428"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="inline-block px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200/60 mb-2">
+                UAF Accredited
+              </span>
+              <h3 className="font-display text-xl text-[var(--ink)]">UAF (CB-MS-5428)</h3>
+              <p className="text-xs text-[var(--muted)] mt-1.5 leading-relaxed">
+                United Accreditation Foundation CB-MS-5428
+              </p>
+              <div className="mt-5 pt-4 border-t border-[var(--line)]/50 w-full text-left text-xs text-[var(--muted)] space-y-1.5">
+                <p className="flex items-center gap-2">
+                  <span className="text-[var(--orange)] font-bold">✓</span> Registered Accreditation CB-MS-5428
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-[var(--orange)] font-bold">✓</span> Internationally Recognized
+                </p>
+              </div>
+            </div>
+
+            {/* IAF */}
+            <div className="group relative bg-white border border-[var(--line)] rounded-2xl p-6 transition-all duration-300 hover:border-[var(--orange)] hover:shadow-[var(--shadow-lg)] hover:-translate-y-1.5 flex flex-col items-center text-center">
+              <div className="w-28 h-28 rounded-xl p-3 bg-white shadow-md border border-slate-100 flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105">
+                <img
+                  src="/images/certifications/iaf-cert.jpg"
+                  alt="IAF Multilateral Recognition Arrangement Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="inline-block px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/60 mb-2">
+                IAF Member
+              </span>
+              <h3 className="font-display text-xl text-[var(--ink)]">IAF MLA</h3>
+              <p className="text-xs text-[var(--muted)] mt-1.5 leading-relaxed">
+                IAF Multilateral Recognition Arrangement
+              </p>
+              <div className="mt-5 pt-4 border-t border-[var(--line)]/50 w-full text-left text-xs text-[var(--muted)] space-y-1.5">
+                <p className="flex items-center gap-2">
+                  <span className="text-[var(--orange)] font-bold">✓</span> Multilateral Recognition Arrangement
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="text-[var(--orange)] font-bold">✓</span> Worldwide Buyers Acceptance
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

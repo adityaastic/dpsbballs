@@ -77,19 +77,19 @@ export default function Header({ navLinks, site }: Props) {
   return (
     <header className={`site-header sticky top-0 z-50 ${scrolled ? "site-header-solid" : ""}`}>
       {/* Main nav row */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 md:px-8">
-        {/* ── Brand ── */}
-        <Link href="/" className="brand-mark group flex items-center gap-3.5 shrink-0">
+      <div className="mx-auto flex max-w-[98rem] items-center justify-between gap-4 sm:gap-6 px-3 sm:px-6 md:px-8 py-1.5 md:py-2">
+        {/* ── Brand (Left Corner) ── */}
+        <Link href="/" className="brand-mark group flex items-center gap-3 shrink-0">
           {site.logoUrl ? (
-            <img src={site.logoUrl} alt={site.name} className="h-12 md:h-14 lg:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+            <img src={site.logoUrl} alt={site.name} className="h-10 sm:h-12 md:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
           ) : (
-            <div className="flex items-center gap-3.5">
-              <span className="brand-badge !w-12 !h-12 !text-base" aria-hidden>{site.shortName}</span>
+            <div className="flex items-center gap-3">
+              <span className="brand-badge !w-11 !h-11 !text-sm" aria-hidden>{site.shortName}</span>
               <div className="hidden sm:flex flex-col leading-tight">
-                <span className="font-display font-bold text-lg md:text-xl text-[var(--ink)] tracking-[0.03em]">
+                <span className="font-display font-bold text-base md:text-lg text-[var(--ink)] tracking-[0.03em]">
                   {site.shortName} Precision
                 </span>
-                <span className="text-[0.68rem] uppercase tracking-[0.18em] text-[var(--muted)] font-semibold">
+                <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[var(--muted)] font-semibold">
                   Precision Balls Mfg.
                 </span>
               </div>
