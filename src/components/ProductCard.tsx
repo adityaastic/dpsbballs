@@ -4,12 +4,27 @@ import ComingSoon from "./ComingSoon";
 
 export default function ProductCard({ product }: { product: Product }) {
   return (
-    <Link href={`/products/${product.slug}`} className="product-card group">
-      <ComingSoon
-        label={`${product.title} — image coming soon`}
-        aspect="wide"
-        className="rounded-none"
-      />
+    <Link
+      href={`/products/${product.slug}`}
+      className="product-card group block bg-white border border-[var(--line)] rounded-xl overflow-hidden shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all duration-300 hover:-translate-y-1"
+    >
+      {product.imageUrl ? (
+        <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 border-b border-[var(--line)]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={product.imageUrl}
+            alt={product.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+        </div>
+      ) : (
+        <ComingSoon
+          label={`${product.title} — image coming soon`}
+          aspect="wide"
+          className="rounded-none border-0 border-b border-[var(--line)]"
+        />
+      )}
       <div className="p-5">
         <h3 className="font-display text-xl tracking-wide text-[var(--ink)] transition group-hover:text-[var(--steel)]">
           {product.title}

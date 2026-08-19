@@ -7,6 +7,7 @@ import { useAdminAuth } from "./AdminAuthProvider";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "◼", group: "Overview" },
+  { href: "/admin/hero", label: "Home Hero Slider", icon: "🖼️", group: "Content" },
   { href: "/admin/products", label: "Products", icon: "⬢", group: "Content" },
   { href: "/admin/pages", label: "Pages", icon: "▤", group: "Content" },
   { href: "/admin/media", label: "Media Library", icon: "▣", group: "Content" },

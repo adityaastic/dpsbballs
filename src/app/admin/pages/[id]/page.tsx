@@ -36,6 +36,25 @@ export default function AdminPageEdit() {
 
   const update = (k: string, v: any) => setPage((p: any) => ({ ...p, [k]: v }));
 
+  const uploadSectionImage = async (file: File, idx: number) => {
+    try {
+      const form = new FormData();
+      form.append("files", file);
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        body: form,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Upload failed");
+      if (json.media && json.media.length > 0) {
+        sectionSet(idx, "imageUrl", json.media[0].url);
+        show("Section image uploaded!", "success");
+      }
+    } catch (e: any) {
+      show(e.message, "error");
+    }
+  };
+
   const sectionSet = (i: number, f: string, v: any) =>
     setPage((p: any) => {
       const s = [...(p.sections || [])];
@@ -45,7 +64,7 @@ export default function AdminPageEdit() {
   const sectionAdd = () =>
     setPage((p: any) => ({
       ...p,
-      sections: [...(p.sections || []), { key: `section_${Date.now()}`, heading: "", subheading: "", body: "", order: (p.sections?.length || 0) }],
+      sections: [...(p.sections || []), { key: `section_${Date.now()}`, heading: "", subheading: "", body: "", imageUrl: "", order: (p.sections?.length || 0) }],
     }));
   const sectionRemove = () =>
     setPage((p: any) => ({ ...p, sections: (p.sections || []).slice(0, -1) }));
@@ -206,6 +225,32 @@ export default function AdminPageEdit() {
                   value={s.body || ""}
                   onChange={(e) => sectionSet(i, "body", e.target.value)}
                 />
+              </Field>
+              <Field label="Section Image (optional)">
+                <div className="border border-dashed border-slate-300 rounded-lg p-3 bg-slate-50 flex items-center justify-between gap-4">
+                  {s.imageUrl ? (
+                    <div className="flex items-center gap-3">
+                      <img src={s.imageUrl} alt="Section" className="h-16 w-24 object-cover rounded border border-slate-200" />
+                      <button
+                        type="button"
+                        onClick={() => sectionSet(i, "imageUrl", "")}
+                        className="text-xs px-2.5 py-1 border border-slate-300 rounded text-slate-600 hover:bg-slate-100 transition"
+                      >
+                        Remove Image
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer text-xs font-semibold text-slate-700 hover:text-amber-600 flex items-center gap-2 py-1">
+                      <span>📷 Click to upload Section Card Image</span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => e.target.files?.[0] && uploadSectionImage(e.target.files[0], i)}
+                      />
+                    </label>
+                  )}
+                </div>
               </Field>
             </div>
           ))}

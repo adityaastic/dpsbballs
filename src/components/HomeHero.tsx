@@ -10,9 +10,12 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Normalize slides
+  const defaultFallbackImage =
+    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80";
+
   const normalizedSlides = slides && slides.length > 0 ? slides : [];
-  const primarySlide = normalizedSlides[0];
-  const desktopUrl = primarySlide?.desktopUrl || primarySlide?.mobileUrl || "";
+  const primarySlide = normalizedSlides.find((s) => Boolean(s.desktopUrl || s.mobileUrl)) || normalizedSlides[0];
+  const desktopUrl = primarySlide?.desktopUrl || primarySlide?.mobileUrl || defaultFallbackImage;
 
   // Ensure mobile view has at least 3 slides
   let mobileSlides = [...normalizedSlides];
@@ -21,9 +24,9 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   }
   if (mobileSlides.length === 0) {
     mobileSlides = [
-      { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 0 },
-      { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 1 },
-      { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
+      { desktopUrl: defaultFallbackImage, mobileUrl: defaultFallbackImage, headline: "", subline: "", order: 0 },
+      { desktopUrl: defaultFallbackImage, mobileUrl: defaultFallbackImage, headline: "", subline: "", order: 1 },
+      { desktopUrl: defaultFallbackImage, mobileUrl: defaultFallbackImage, headline: "", subline: "", order: 2 },
     ];
   }
   const count = mobileSlides.length;
@@ -98,18 +101,14 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
           }}
         >
           {mobileSlides.map((s, i) => {
-            const url = s.mobileUrl || s.desktopUrl;
+            const url = s.mobileUrl || s.desktopUrl || defaultFallbackImage;
             return (
               <div key={`mob-${i}`} className="mobile-slide">
-                {url ? (
-                  <img
-                    src={url}
-                    alt={`Mobile banner ${i + 1}`}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div className="mobile-slide-bg mobile-slide-fallback" />
-                )}
+                <img
+                  src={url}
+                  alt={`Mobile banner ${i + 1}`}
+                  className="w-full h-full object-contain"
+                />
               </div>
             );
           })}

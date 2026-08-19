@@ -40,6 +40,45 @@ export default function AdminSettingsPage() {
   const update = (key: string, value: any) =>
     setData((d: any) => ({ ...d, [key]: value }));
 
+
+
+  const persistSettings = async (newData: any) => {
+    setSaving(true);
+    try {
+      const clean: any = { ...newData };
+      clean.highlights = (clean.highlights || []).filter(
+        (x: any) => x.label && x.value
+      );
+      clean.navLinks = (clean.navLinks || []).filter((x: any) => x.href && x.label);
+      if (clean.heroSlides && Array.isArray(clean.heroSlides)) {
+        clean.heroSlides = clean.heroSlides
+          .filter((s: any) => s !== null && typeof s === "object")
+          .map((s: any, idx: number) => ({
+            desktopUrl: s.desktopUrl || "",
+            mobileUrl: s.mobileUrl || "",
+            headline: s.headline || "",
+            subline: s.subline || "",
+            order: typeof s.order === "number" ? s.order : idx,
+          }));
+      }
+
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clean),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Save failed");
+      show("Settings saved & published to home page!", "success");
+      return true;
+    } catch (e: any) {
+      show(e.message, "error");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const uploadLogo = async (file: File, field: "logoUrl" | "logoDarkUrl" | "faviconUrl") => {
     try {
       const form = new FormData();
@@ -51,8 +90,12 @@ export default function AdminSettingsPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Upload failed");
       if (json.media && json.media.length > 0) {
-        update(field, json.media[0].url);
-        show("Uploaded", "success");
+        const uploadedUrl = json.media[0].url;
+        setData((d: any) => {
+          const nextData = { ...d, [field]: uploadedUrl };
+          persistSettings(nextData);
+          return nextData;
+        });
       }
     } catch (e: any) {
       show(e.message, "error");
@@ -123,8 +166,25 @@ export default function AdminSettingsPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Upload failed");
       if (json.media && json.media.length > 0) {
-        heroSlideSet(idx, field, json.media[0].url);
-        show("Uploaded", "success");
+        const uploadedUrl = json.media[0].url;
+        setData((d: any) => {
+          const heroSlides = Array.isArray(d?.heroSlides) ? [...d.heroSlides] : [];
+          while (heroSlides.length <= idx) {
+            heroSlides.push({ desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: heroSlides.length });
+          }
+          heroSlides[idx] = {
+            desktopUrl: "",
+            mobileUrl: "",
+            headline: "",
+            subline: "",
+            order: idx,
+            ...heroSlides[idx],
+            [field]: uploadedUrl,
+          };
+          const nextData = { ...d, heroSlides };
+          persistSettings(nextData);
+          return nextData;
+        });
       }
     } catch (e: any) {
       show(e.message, "error");
@@ -157,38 +217,7 @@ export default function AdminSettingsPage() {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    try {
-      const clean: any = { ...data };
-      clean.highlights = (clean.highlights || []).filter(
-        (x: any) => x.label && x.value
-      );
-      clean.navLinks = (clean.navLinks || []).filter((x: any) => x.href && x.label);
-      if (clean.heroSlides && Array.isArray(clean.heroSlides)) {
-        clean.heroSlides = clean.heroSlides
-          .filter((s: any) => s !== null && typeof s === "object")
-          .map((s: any, idx: number) => ({
-            desktopUrl: s.desktopUrl || "",
-            mobileUrl: s.mobileUrl || "",
-            headline: s.headline || "",
-            subline: s.subline || "",
-            order: typeof s.order === "number" ? s.order : idx,
-          }));
-      }
-
-      const res = await fetch("/api/admin/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(clean),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Save failed");
-      show("Site settings saved", "success");
-    } catch (e: any) {
-      show(e.message, "error");
-    } finally {
-      setSaving(false);
-    }
+    await persistSettings(data);
   };
 
   if (loading || !data) {
@@ -607,6 +636,14 @@ export default function AdminSettingsPage() {
               className="text-xs px-3 py-1.5 bg-slate-900 text-white rounded"
             >
               + Add Slide
+            </button>
+            <button
+              type="button"
+              onClick={() => persistSettings(data)}
+              disabled={saving}
+              className="text-xs px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold rounded flex items-center gap-1 shadow-sm transition"
+            >
+              💾 {saving ? "Publishing..." : "Save & Publish Slides"}
             </button>
           </div>
         </div>

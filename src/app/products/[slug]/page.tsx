@@ -31,8 +31,67 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const others = products.filter((p) => p.slug !== product.slug).slice(0, 3);
 
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.dspballs.co.in").replace(/\/$/, "");
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${baseUrl}/products/${product.slug}/#product`,
+    name: product.title,
+    description: product.description || product.short,
+    image: product.imageUrl ? [product.imageUrl] : [`${baseUrl}/images/certifications/gsci-cert.jpg`],
+    category: "Precision Balls",
+    brand: {
+      "@type": "Brand",
+      name: "DSP Precision",
+    },
+    manufacturer: {
+      "@type": "Organization",
+      name: "DSP Precision Products Pvt. Ltd.",
+    },
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "INR",
+      price: "100",
+      itemCondition: "https://schema.org/NewCondition",
+      availability: "https://schema.org/InStock",
+    },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: baseUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Products",
+        item: `${baseUrl}/products`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.title,
+        item: `${baseUrl}/products/${product.slug}`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <section className="page-hero">
         <div className="page-hero-bg" aria-hidden />
         <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-14 md:grid-cols-2 md:items-end md:px-6 md:py-20">

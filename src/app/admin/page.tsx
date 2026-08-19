@@ -195,6 +195,136 @@ export default function AdminDashboardPage() {
 
       <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          {/* Admin Visual Guide & Quick Navigator */}
+          <AdminCard className="p-5 md:p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 text-white border-slate-800 shadow-xl">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-5 pb-4 border-b border-white/10">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  Admin Visual Management Guide
+                </span>
+                <h2 className="font-display text-xl md:text-2xl font-bold tracking-tight text-white">
+                  What, When &amp; How To Update Site Content
+                </h2>
+                <p className="text-xs text-slate-300 mt-1">
+                  Click any action card below to update your website directly without confusion.
+                </p>
+              </div>
+              <Link
+                href="/admin/settings"
+                className="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-md transition-all hover:scale-105"
+              >
+                ⚙️ Open Full Settings
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <Link
+                href="/admin/hero"
+                className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400/50 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 text-base grid place-items-center font-bold">
+                      🖼️
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+                      Home Hero
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-sm text-white group-hover:text-amber-300 transition-colors">
+                    1. Home Banner Slides
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                    Upload desktop &amp; mobile banner images for the home page hero slider.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-amber-300 font-semibold">
+                  <span>Update Banner Images</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/settings"
+                className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400/50 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 text-base grid place-items-center font-bold">
+                      🏷️
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                      Branding
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-sm text-white group-hover:text-emerald-300 transition-colors">
+                    2. Logo &amp; Contact Info
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                    Update company logo, phone numbers, email addresses and office locations.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-emerald-300 font-semibold">
+                  <span>Update Logo &amp; Phone</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/products"
+                className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400/50 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-300 text-base grid place-items-center font-bold">
+                      📦
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
+                      Catalogue
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-sm text-white group-hover:text-blue-300 transition-colors">
+                    3. Products Catalogue
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                    Add new precision ball products, materials, technical specs and images.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-blue-300 font-semibold">
+                  <span>Manage Products</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/pages"
+                className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400/50 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-300 text-base grid place-items-center font-bold">
+                      📄
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-purple-400 tracking-wider">
+                      Page Text
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-sm text-white group-hover:text-purple-300 transition-colors">
+                    4. Page Content &amp; Text
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                    Edit text sections, titles and headings for About, Quality and Network pages.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-purple-300 font-semibold">
+                  <span>Edit Page Text</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </div>
+              </Link>
+            </div>
+          </AdminCard>
+
           <AdminCard className="p-5 md:p-6">
             <div className="flex items-center justify-between mb-5">
               <div>

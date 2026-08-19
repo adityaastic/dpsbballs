@@ -3,7 +3,7 @@ import ComingSoon from "@/components/ComingSoon";
 import ProductCard from "@/components/ProductCard";
 import HomeHero from "@/components/HomeHero";
 import CertificationBadges from "@/components/CertificationBadges";
-import { getProducts, getSiteData, type HeroSlide } from "@/lib/cms";
+import { getProducts, getSiteData, getPageContent, type HeroSlide } from "@/lib/cms";
 import type { Product } from "@/data/products";
 
 type SiteHighlight = { label: string; value: string };
@@ -27,9 +27,10 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const [{ site, heroSlides }, products] = await Promise.all([
+  const [{ site, heroSlides }, products, pageData] = await Promise.all([
     getSiteData() as Promise<{ site: SiteData; heroSlides: HeroSlide[]; navLinks: { href: string; label: string }[]; seo: { title: string; description: string } }>,
     getProducts() as Promise<Product[]>,
+    getPageContent("home"),
   ]);
 
   const slides: HeroSlide[] = heroSlides?.length
@@ -80,8 +81,17 @@ export default async function HomePage() {
 
           <div className="relative">
             <div className="absolute -inset-4 rounded-2xl bg-gradient-to-br from-[var(--orange)]/10 to-[var(--gold)]/10 blur-2xl" aria-hidden />
-            <ComingSoon label="Plant / product image coming soon" aspect="square"
-              className="relative border border-[var(--line)] shadow-[var(--shadow-lg)]" />
+            {pageData?.sections?.[0]?.imageUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={pageData.sections[0].imageUrl as string}
+                alt="DSP Precision Plant & Manufacturing"
+                className="relative rounded-2xl border border-[var(--line)] shadow-[var(--shadow-lg)] w-full aspect-square object-cover"
+              />
+            ) : (
+              <ComingSoon label="Plant / product image coming soon" aspect="square"
+                className="relative border border-[var(--line)] shadow-[var(--shadow-lg)]" />
+            )}
           </div>
         </div>
       </section>

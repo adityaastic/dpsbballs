@@ -13,6 +13,7 @@ const PageContentSchema = new mongoose.Schema(
         heading: { type: String },
         subheading: { type: String },
         body: { type: String },
+        imageUrl: { type: String },
         order: { type: Number, default: 0 },
       }
     ],

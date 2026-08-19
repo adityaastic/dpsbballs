@@ -51,11 +51,20 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
               ))}
             </div>
           </div>
-          <ComingSoon
-            label="Leadership / plant image coming soon"
-            aspect="portrait"
-            className="border border-[var(--line)]"
-          />
+          {pageData?.sections?.[0]?.imageUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={pageData.sections[0].imageUrl as string}
+              alt="DSP Precision Leadership & Manufacturing Facility"
+              className="rounded-2xl border border-[var(--line)] shadow-md w-full aspect-portrait object-cover"
+            />
+          ) : (
+            <ComingSoon
+              label="Leadership / plant image coming soon"
+              aspect="portrait"
+              className="border border-[var(--line)]"
+            />
+          )}
         </div>
       </section>
 
