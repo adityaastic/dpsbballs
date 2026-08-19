@@ -70,9 +70,11 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
 
       <section className="section bg-[var(--surface)]">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
-          <h2 className="section-title">What we manufacture</h2>
+          <h2 className="section-title">
+            {(pageData?.sections?.[1]?.heading as string) || "What we manufacture"}
+          </h2>
           <p className="section-copy">
-            A complete range of precision balls and allied products.
+            {(pageData?.sections?.[1]?.body as string) || "A complete range of precision balls and allied products."}
           </p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((p, i) => (
@@ -97,13 +99,13 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[var(--orange)]/10 text-[var(--orange-deep)] border border-[var(--orange)]/20 shadow-xs mb-3">
               <span className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
-              Certified Quality &amp; Global Accreditation
+              {(pageData?.sections?.[2]?.subheading as string) || "Certified Quality & Global Accreditation"}
             </span>
             <h2 className="section-title mt-2">
-              ISO 9001:2015 Quality &amp; International Accreditations
+              {(pageData?.sections?.[2]?.heading as string) || "ISO 9001:2015 Quality & International Accreditations"}
             </h2>
             <p className="section-copy mt-3">
-              Our precision manufacturing operations adhere strictly to global quality management systems and international accreditation frameworks.
+              {(pageData?.sections?.[2]?.body as string) || "Our precision manufacturing operations adhere strictly to global quality management systems and international accreditation frameworks."}
             </p>
           </div>
 
