@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { dbConnect } from "@/lib/db";
-import { Admin } from "@/models/Admin";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { createSession } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
@@ -14,12 +13,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await dbConnect();
-    const admin = await Admin.findOne({
-      $or: [{ username }, { email: username }],
-    });
+    const supabase = getSupabaseAdmin();
+    const { data: admin, error } = await supabase
+      .from("admins")
+      .select("*")
+      .or(`username.eq.${username},email.eq.${username}`)
+      .maybeSingle();
 
-    if (!admin) {
+    if (error || !admin) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     await createSession({
-      id: admin._id.toString(),
+      id: admin.id,
       username: admin.username,
       email: admin.email,
       role: admin.role,
@@ -38,14 +39,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       user: {
-        id: admin._id,
+        id: admin.id,
         username: admin.username,
         email: admin.email,
         role: admin.role,
         name: admin.name,
       },
     });
-  } catch {
+  } catch (err: unknown) {
+    console.error("Login error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

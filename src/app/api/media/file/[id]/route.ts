@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import { dbConnect } from "@/lib/db";
-import { Media } from "@/models/Media";
-import { getFromR2 } from "@/lib/r2";
+import { getSupabaseAdmin } from "@/lib/supabase";
+import { getSupabasePublicUrl } from "@/lib/supabaseStorage";
 
 export async function GET(
   _request: NextRequest,
@@ -10,48 +8,26 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    await dbConnect();
+    const supabase = getSupabaseAdmin();
 
-    const media = await Media.findById(id).select("+data").lean();
-    if (!media) {
-      return NextResponse.json({ error: "File not found" }, { status: 404 });
-    }
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const query = supabase.from("media").select("*");
+    const { data: media } = isUuid
+      ? await query.eq("id", id).maybeSingle()
+      : await query.or(`filename.eq.${id},path.eq.${id}`).maybeSingle();
 
-    if (media.url?.startsWith("http")) {
+    if (media?.url?.startsWith("http")) {
       return NextResponse.redirect(media.url);
     }
 
-    if (media.path && !media.data) {
-      const { body, contentType } = await getFromR2(media.path);
-      return new NextResponse(new Uint8Array(body), {
-        headers: {
-          "Content-Type": contentType || media.mimeType || "application/octet-stream",
-          "Cache-Control": "public, max-age=31536000, immutable",
-        },
-      });
-    }
-
-    if (media.data) {
-      return new NextResponse(media.data, {
-        headers: {
-          "Content-Type": media.mimeType || "application/octet-stream",
-          "Cache-Control": "public, max-age=31536000, immutable",
-        },
-      });
-    }
-
-    if (media.path) {
-      const buffer = await fs.readFile(media.path);
-      return new NextResponse(buffer, {
-        headers: {
-          "Content-Type": media.mimeType || "application/octet-stream",
-          "Cache-Control": "public, max-age=31536000, immutable",
-        },
-      });
+    if (media?.path) {
+      const publicUrl = getSupabasePublicUrl(media.path);
+      return NextResponse.redirect(publicUrl);
     }
 
     return NextResponse.json({ error: "File not found" }, { status: 404 });
-  } catch {
+  } catch (err: unknown) {
+    console.error("Media file serve error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

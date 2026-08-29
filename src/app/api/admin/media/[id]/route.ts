@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import { dbConnect } from "@/lib/db";
-import { Media } from "@/models/Media";
+import { getSupabaseAdmin } from "@/lib/supabase";
+import { deleteFromSupabaseStorage } from "@/lib/supabaseStorage";
 import { requireAuth } from "@/lib/authGuard";
-import { deleteFromR2, isR2Configured } from "@/lib/r2";
 
 export async function DELETE(
   _request: NextRequest,
@@ -14,32 +12,34 @@ export async function DELETE(
     if (authRes) return authRes;
 
     const { id } = await params;
-    await dbConnect();
+    const supabase = getSupabaseAdmin();
 
-    const media = await Media.findById(id).select("+data");
-    if (!media) {
+    const { data: media, error: findErr } = await supabase
+      .from("media")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (findErr || !media) {
       return NextResponse.json({ error: "Media not found" }, { status: 404 });
     }
 
-    const hasDbData = !!media.data;
-    const r2Ready = isR2Configured();
-
-    if (media.path && !hasDbData && r2Ready) {
+    if (media.path) {
       try {
-        await deleteFromR2(media.path);
-      } catch {
-        console.warn("R2 delete failed, proceeding with DB record deletion.");
+        await deleteFromSupabaseStorage(media.path);
+      } catch (storageErr) {
+        console.warn("Storage deletion warning:", storageErr);
       }
-    } else if (media.path && !hasDbData) {
-      try {
-        await fs.unlink(media.path);
-      } catch {}
     }
 
-    await Media.findByIdAndDelete(id);
+    const { error: delErr } = await supabase.from("media").delete().eq("id", id);
+    if (delErr) {
+      return NextResponse.json({ error: "Media deletion failed" }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err: unknown) {
+    console.error("Media DELETE error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

@@ -1,15 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { dbConnect } from "@/lib/db";
-import { Media } from "@/models/Media";
+import { getSupabaseAdmin } from "@/lib/supabase";
+import { uploadToSupabaseStorage } from "@/lib/supabaseStorage";
 import { requireAuth } from "@/lib/authGuard";
-import { getPublicUrl, uploadToR2, isR2Configured } from "@/lib/r2";
 
 export async function GET() {
   try {
-    await dbConnect();
-    const media = await Media.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json({ success: true, media });
-  } catch {
+    const supabase = getSupabaseAdmin();
+    const { data: media, error } = await supabase
+      .from("media")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    const mapped = (media || []).map((m) => ({
+      _id: m.id,
+      id: m.id,
+      filename: m.filename,
+      originalName: m.original_name,
+      url: m.url,
+      path: m.path,
+      mimeType: m.mime_type,
+      size: m.size,
+      folder: m.folder,
+      alt: m.alt,
+      createdAt: m.created_at,
+      updatedAt: m.updated_at,
+    }));
+
+    return NextResponse.json({ success: true, media: mapped });
+  } catch (err: unknown) {
+    console.error("Media GET error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -35,57 +58,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No files provided" }, { status: 400 });
     }
 
-    await dbConnect();
+    const supabase = getSupabaseAdmin();
     const uploaded = [];
-    const r2Ready = isR2Configured();
 
     for (const file of files) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const key = `${folder}/${safeName}`;
+      const storagePath = `${folder}/${safeName}`;
 
-      let useDbFallback = !r2Ready;
-
-      if (r2Ready) {
-        try {
-          await uploadToR2(key, buffer, file.type || "application/octet-stream");
-        } catch {
-          console.warn("R2 upload failed, falling back to DB storage.");
-          useDbFallback = true;
-        }
+      let fileUrl = "";
+      try {
+        const uploadRes = await uploadToSupabaseStorage(
+          storagePath,
+          buffer,
+          file.type || "application/octet-stream"
+        );
+        fileUrl = uploadRes.url;
+      } catch (storageErr) {
+        console.warn("Storage upload warning, using direct endpoint fallback:", storageErr);
+        fileUrl = `/api/media/file/${safeName}`;
       }
 
-      const createData: Record<string, unknown> = {
-        filename: safeName,
-        originalName: file.name,
-        url: `/api/media/file/placeholder`,
-        path: key,
-        mimeType: file.type,
-        size: file.size,
-        folder,
-      };
+      const { data: mediaRecord, error } = await supabase
+        .from("media")
+        .insert({
+          filename: safeName,
+          original_name: file.name,
+          url: fileUrl,
+          path: storagePath,
+          mime_type: file.type || "application/octet-stream",
+          size: file.size,
+          folder,
+        })
+        .select()
+        .single();
 
-      if (useDbFallback) {
-        createData.data = buffer;
+      if (error) {
+        throw error;
       }
 
-      const media = await Media.create(createData);
-
-      if (useDbFallback) {
-        media.url = `/api/media/file/${media._id}`;
-      } else {
-        const publicUrl = getPublicUrl(key);
-        media.url = publicUrl || `/api/media/file/${media._id}`;
-      }
-      await media.save();
-
-      const obj = media.toObject();
-      delete obj.data;
-      uploaded.push(obj);
+      uploaded.push({
+        ...mediaRecord,
+        _id: mediaRecord.id,
+        originalName: mediaRecord.original_name,
+        mimeType: mediaRecord.mime_type,
+      });
     }
 
     return NextResponse.json({ success: true, media: uploaded }, { status: 201 });
-  } catch {
+  } catch (err: unknown) {
+    console.error("Media POST upload error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

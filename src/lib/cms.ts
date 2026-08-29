@@ -1,16 +1,15 @@
-import { dbConnect } from "./db";
-import { Product } from "@/models/Product";
-import { SiteSetting } from "@/models/SiteSetting";
-import { TechnicalContent } from "@/models/TechnicalContent";
-import { PageContent } from "@/models/PageContent";
+import { getSupabaseAdmin } from "./supabase";
 import {
   products as staticProducts,
   Product as StaticProductType,
 } from "@/data/products";
-import { site as staticSite, navLinks as staticNav, heroSlides as staticHeroSlides, HeroSlide } from "@/data/site";
+import {
+  site as staticSite,
+  navLinks as staticNav,
+  heroSlides as staticHeroSlides,
+  HeroSlide,
+} from "@/data/site";
 import type { SpecItem, TableItem } from "@/data/products";
-
-export type { HeroSlide };
 import {
   manufacturingProcess,
   materialComparison,
@@ -19,94 +18,134 @@ import {
   ceramicCompareRows,
 } from "@/data/technical";
 
-type WithId = { _id?: unknown };
+export type { HeroSlide };
+
 type Highlight = { label: string; value: string };
 type Office = { label: string; lines: string[] };
 type NavItem = { href: string; label: string; order?: number };
+
 export type PageContentData = {
+  id?: string;
+  _id?: string;
   slug?: string;
   title?: string;
   heroEyebrow?: string;
   heroTitle?: string;
   heroDescription?: string;
-  sections?: Array<Record<string, unknown>>;
+  sections?: Array<{
+    key?: string;
+    heading?: string;
+    subheading?: string;
+    body?: string;
+    imageUrl?: string;
+    order?: number;
+    [key: string]: unknown;
+  }>;
+  bodyHtml?: string;
   [key: string]: unknown;
 };
 
-type RawProduct = {
+type DbProductRow = {
+  id: string;
   slug: string;
   title: string;
-  short?: string;
-  description?: string;
-  imageUrl?: string;
-  highlights?: string[];
-  grades?: string[];
-  specs?: (SpecItem & WithId)[];
-  tables?: (TableItem & WithId)[];
+  short?: string | null;
+  description?: string | null;
+  image_url?: string | null;
+  highlights?: string[] | null;
+  grades?: string[] | null;
+  specs?: SpecItem[] | null;
+  tables?: TableItem[] | null;
+  order?: number | null;
+  published?: boolean | null;
 };
 
-type RawSite = {
+type DbSiteSettingRow = {
+  id: string;
+  key: string;
   name: string;
-  shortName?: string;
-  tagline?: string;
-  logoUrl?: string;
-  logoDarkUrl?: string;
-  faviconUrl?: string;
-  email?: string;
-  phoneWork?: string;
-  phoneRegd?: string;
-  phoneFax?: string;
-  mobile?: string;
-  whatsapp?: string;
-  workOffice?: (Office & WithId) | null;
-  regdOffice?: (Office & WithId) | null;
-  highlights?: (Highlight & WithId)[];
-  navLinks?: (NavItem & WithId)[];
-  heroSlides?: (HeroSlide & WithId)[];
-  seoTitle?: string;
-  seoDescription?: string;
+  short_name?: string | null;
+  tagline?: string | null;
+  logo_url?: string | null;
+  logo_dark_url?: string | null;
+  favicon_url?: string | null;
+  email?: string | null;
+  phone_work?: string | null;
+  phone_regd?: string | null;
+  phone_fax?: string | null;
+  mobile?: string | null;
+  whatsapp?: string | null;
+  work_office?: Office | null;
+  regd_office?: Office | null;
+  highlights?: Highlight[] | null;
+  nav_links?: NavItem[] | null;
+  hero_slides?: HeroSlide[] | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
 };
 
-type RawProcess = { title: string; description: string; order?: number };
-type RawTestimonial = { name: string; company?: string; text: string };
-type RawComparison = { headers: string[]; rows: (string[] & WithId)[] };
+type DbTechnicalRow = {
+  id: string;
+  key: string;
+  manufacturing_process?: Array<{ title: string; text?: string; description?: string; step?: string; order?: number }> | null;
+  material_comparison?: { intro?: string; rows?: Array<{ material: string; bestFor?: string; strengths?: string; notes?: string }> } | null;
+  client_testimonials?: Array<{ type?: string; author: string; role?: string; quote: string; detail?: string }> | null;
+  ceramic_compare?: { headers?: string[]; rows?: string[][] } | null;
+};
 
-function plain<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
-}
+type DbPageContentRow = {
+  id: string;
+  slug: string;
+  title: string;
+  hero_eyebrow?: string | null;
+  hero_title?: string | null;
+  hero_description?: string | null;
+  sections?: Array<{
+    key?: string;
+    heading?: string;
+    subheading?: string;
+    body?: string;
+    imageUrl?: string;
+    order?: number;
+  }> | null;
+  body_html?: string | null;
+};
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn();
-  } catch {
+  } catch (err) {
+    console.warn("CMS fallback triggered:", err);
     return fallback;
   }
 }
 
-function stripId<T extends WithId>(item: T): Omit<T, "_id"> {
-  const { _id: _unused, ...rest } = item;
-  void _unused;
-  return rest;
-}
-
 export async function getProducts(): Promise<StaticProductType[]> {
   return safe(async () => {
-    await dbConnect();
-    const rawItems = await Product.find({ published: true })
-      .sort({ order: 1, createdAt: -1 })
-      .lean();
-    if (rawItems.length === 0) return staticProducts;
-    const items = plain(rawItems) as RawProduct[];
-    return items.map((p: RawProduct) => ({
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("published", true)
+      .order("order", { ascending: true })
+      .order("created_at", { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      return staticProducts;
+    }
+
+    return (data as DbProductRow[]).map((p) => ({
+      _id: p.id,
+      id: p.id,
       slug: p.slug,
       title: p.title,
       short: p.short || "",
       description: p.description || "",
-      imageUrl: p.imageUrl,
+      imageUrl: p.image_url || undefined,
       highlights: p.highlights || [],
       grades: p.grades || [],
-      specs: (p.specs || []).map((s: SpecItem & WithId) => stripId(s)),
-      tables: (p.tables || []).map((t: TableItem & WithId) => stripId(t)),
+      specs: p.specs || [],
+      tables: p.tables || [],
     }));
   }, staticProducts);
 }
@@ -116,111 +155,151 @@ export async function getProduct(slug: string): Promise<StaticProductType | unde
   return all.find((p) => p.slug === slug);
 }
 
-function cleanAddress<T extends Office & WithId>(addr: T | null | undefined): Omit<T, "_id"> | null {
-  if (!addr) return null;
-  return stripId(addr);
-}
-
 export async function getSiteData() {
-  return safe(async () => {
-    await dbConnect();
-    const raw = await SiteSetting.findOne({ key: "main" }).lean();
-    if (!raw) {
-      return { site: staticSite, navLinks: staticNav, heroSlides: staticHeroSlides, seo: { title: "", description: "" } };
+  return safe(
+    async () => {
+      const supabase = getSupabaseAdmin();
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("key", "main")
+        .maybeSingle();
+
+      if (error || !data) {
+        return {
+          site: staticSite,
+          navLinks: staticNav,
+          heroSlides: staticHeroSlides,
+          seo: { title: "", description: "" },
+        };
+      }
+
+      const s = data as DbSiteSettingRow;
+      const site = {
+        name: s.name || staticSite.name,
+        shortName: s.short_name || staticSite.shortName,
+        tagline: s.tagline || staticSite.tagline,
+        logoUrl: s.logo_url || "",
+        logoDarkUrl: s.logo_dark_url || "",
+        faviconUrl: s.favicon_url || "",
+        email: s.email || staticSite.email,
+        phoneWork: s.phone_work || staticSite.phoneWork,
+        phoneRegd: s.phone_regd || staticSite.phoneRegd,
+        phoneFax: s.phone_fax || staticSite.phoneFax,
+        mobile: s.mobile || staticSite.mobile,
+        whatsapp: s.whatsapp || staticSite.whatsapp || "",
+        workOffice: s.work_office || staticSite.workOffice,
+        regdOffice: s.regd_office || staticSite.regdOffice,
+        highlights:
+          s.highlights && s.highlights.length > 0
+            ? s.highlights
+            : staticSite.highlights,
+      };
+
+      const navLinks =
+        s.nav_links && s.nav_links.length > 0
+          ? [...s.nav_links].sort(
+              (a: NavItem, b: NavItem) => (a.order || 0) - (b.order || 0)
+            )
+          : staticNav;
+
+      const heroSlides =
+        s.hero_slides && s.hero_slides.length > 0
+          ? [...s.hero_slides].sort(
+              (a: HeroSlide, b: HeroSlide) => (a.order || 0) - (b.order || 0)
+            )
+          : staticHeroSlides;
+
+      const seo = {
+        title: s.seo_title || "",
+        description: s.seo_description || "",
+      };
+
+      return { site, navLinks, heroSlides, seo };
+    },
+    {
+      site: staticSite,
+      navLinks: staticNav,
+      heroSlides: staticHeroSlides,
+      seo: { title: "", description: "" },
     }
-    const s = plain(raw) as RawSite;
-    const cleanedWork = cleanAddress(s.workOffice as (Office & WithId) | null);
-    const cleanedRegd = cleanAddress(s.regdOffice as (Office & WithId) | null);
-    const site = {
-      name: s.name || staticSite.name,
-      shortName: s.shortName || staticSite.shortName,
-      tagline: s.tagline || staticSite.tagline,
-      logoUrl: s.logoUrl || "",
-      logoDarkUrl: s.logoDarkUrl || "",
-      faviconUrl: s.faviconUrl || "",
-      email: s.email || staticSite.email,
-      phoneWork: s.phoneWork || staticSite.phoneWork,
-      phoneRegd: s.phoneRegd || staticSite.phoneRegd,
-      phoneFax: s.phoneFax || staticSite.phoneFax,
-      mobile: s.mobile || staticSite.mobile,
-      whatsapp: s.whatsapp || staticSite.whatsapp || "",
-      workOffice: cleanedWork || staticSite.workOffice,
-      regdOffice: cleanedRegd || staticSite.regdOffice,
-      highlights: (s.highlights && s.highlights.length > 0)
-        ? s.highlights.map((h: Highlight & WithId) => stripId(h))
-        : staticSite.highlights,
-    };
-    const navLinks =
-      s.navLinks && s.navLinks.length > 0
-        ? [...s.navLinks].sort((a: NavItem & WithId, b: NavItem & WithId) => (a.order || 0) - (b.order || 0)).map((n: NavItem & WithId) => stripId(n))
-        : staticNav;
-    const heroSlides =
-      s.heroSlides && s.heroSlides.length > 0
-        ? [...s.heroSlides].sort((a: HeroSlide & WithId, b: HeroSlide & WithId) => (a.order || 0) - (b.order || 0)).map((h: HeroSlide & WithId) => stripId(h))
-        : staticHeroSlides;
-    const seo = {
-      title: s.seoTitle || "",
-      description: s.seoDescription || "",
-    };
-    return { site, navLinks, heroSlides, seo };
-  }, { site: staticSite, navLinks: staticNav, heroSlides: staticHeroSlides, seo: { title: "", description: "" } });
+  );
 }
 
 export async function getTechnical() {
-  return safe(async () => {
-    await dbConnect();
-    const raw = await TechnicalContent.findOne({ key: "main" }).lean();
-    if (!raw) {
+  return safe(
+    async () => {
+      const supabase = getSupabaseAdmin();
+      const { data, error } = await supabase
+        .from("technical_content")
+        .select("*")
+        .eq("key", "main")
+        .maybeSingle();
+
+      if (error || !data) {
+        return {
+          manufacturingProcess,
+          materialComparison,
+          clientTestimonials,
+          ceramicCompareHeaders,
+          ceramicCompareRows,
+        };
+      }
+
+      const t = data as DbTechnicalRow;
       return {
-        manufacturingProcess,
-        materialComparison,
-        clientTestimonials,
-        ceramicCompareHeaders,
-        ceramicCompareRows,
+        manufacturingProcess:
+          t.manufacturing_process && t.manufacturing_process.length > 0
+            ? [...t.manufacturing_process].sort(
+                (a, b) => (a.order || 0) - (b.order || 0)
+              )
+            : manufacturingProcess,
+        materialComparison: t.material_comparison?.rows?.length
+          ? t.material_comparison
+          : materialComparison,
+        clientTestimonials: t.client_testimonials?.length
+          ? t.client_testimonials
+          : clientTestimonials,
+        ceramicCompareHeaders: t.ceramic_compare?.headers?.length
+          ? t.ceramic_compare.headers
+          : ceramicCompareHeaders,
+        ceramicCompareRows: t.ceramic_compare?.rows?.length
+          ? t.ceramic_compare.rows
+          : ceramicCompareRows,
       };
+    },
+    {
+      manufacturingProcess,
+      materialComparison,
+      clientTestimonials,
+      ceramicCompareHeaders,
+      ceramicCompareRows,
     }
-    const t = plain(raw) as {
-      manufacturingProcess?: (RawProcess & WithId)[];
-      materialComparison?: RawComparison;
-      clientTestimonials?: (RawTestimonial & WithId)[];
-      ceramicCompare?: { headers: string[]; rows: string[][] };
-    };
-    return {
-      manufacturingProcess:
-        (t.manufacturingProcess && t.manufacturingProcess.length > 0)
-          ? [...t.manufacturingProcess].sort(
-              (a: RawProcess & WithId, b: RawProcess & WithId) => (a.order || 0) - (b.order || 0)
-            ).map((p: RawProcess & WithId) => stripId(p))
-          : manufacturingProcess,
-      materialComparison: t.materialComparison?.rows?.length
-        ? {
-            ...t.materialComparison,
-            rows: t.materialComparison.rows.map((r: string[] & WithId) => stripId(r)),
-          }
-        : materialComparison,
-      clientTestimonials: t.clientTestimonials?.length
-        ? t.clientTestimonials.map((c: RawTestimonial & WithId) => stripId(c))
-        : clientTestimonials,
-      ceramicCompareHeaders: t.ceramicCompare?.headers?.length
-        ? t.ceramicCompare.headers
-        : ceramicCompareHeaders,
-      ceramicCompareRows: t.ceramicCompare?.rows?.length
-        ? t.ceramicCompare.rows
-        : ceramicCompareRows,
-    };
-  }, {
-    manufacturingProcess,
-    materialComparison,
-    clientTestimonials,
-    ceramicCompareHeaders,
-    ceramicCompareRows,
-  });
+  );
 }
 
 export async function getPageContent(slug: string): Promise<PageContentData | null> {
   return safe(async () => {
-    await dbConnect();
-    const raw = await PageContent.findOne({ slug }).lean();
-    return raw ? (plain(raw) as PageContentData) : null;
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("page_contents")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    const row = data as DbPageContentRow;
+    return {
+      _id: row.id,
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      heroEyebrow: row.hero_eyebrow || undefined,
+      heroTitle: row.hero_title || undefined,
+      heroDescription: row.hero_description || undefined,
+      sections: row.sections || [],
+      bodyHtml: row.body_html || undefined,
+    };
   }, null);
 }

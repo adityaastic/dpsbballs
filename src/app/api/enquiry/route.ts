@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/db";
-import { Enquiry } from "@/models/Enquiry";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { getSiteData } from "@/lib/cms";
 
 type Body = Record<string, string>;
@@ -28,11 +27,7 @@ export async function POST(request: Request) {
 
     let error: string | null = null;
     let subject = "Website Enquiry — DSP Precision Products";
-    let dbType:
-      | "contact"
-      | "career"
-      | "buyer-new"
-      | "buyer-exp" = "contact";
+    let dbType = "contact";
 
     if (formType === "contact") {
       error = required(body, ["email", "message"]);
@@ -57,10 +52,10 @@ export async function POST(request: Request) {
     }
 
     try {
-      await dbConnect();
-      await Enquiry.create({
+      const supabase = getSupabaseAdmin();
+      await supabase.from("enquiries").insert({
         type: dbType,
-        name: body.name,
+        name: body.name || "Anonymous",
         email: body.email,
         phone: body.phone || body.mobile || body.contactNo,
         company: body.company,
@@ -73,7 +68,7 @@ export async function POST(request: Request) {
             .filter(([k, v]) => k !== "formType" && v?.trim())
             .map(([k, v]) => `${k}: ${v}`)
             .join("\n"),
-        productInterest: body.productInterest || body.material,
+        product_interest: body.productInterest || body.material,
         quantity: body.quantity,
         size: body.ballSize || body.size,
         grade: body.grade,
@@ -82,7 +77,7 @@ export async function POST(request: Request) {
       });
     } catch (dbErr) {
       // Don't fail the whole request if DB write fails
-      console.error("Enquiry DB write failed:", dbErr);
+      console.error("Enquiry Supabase write failed:", dbErr);
     }
 
     const { formType: _ft, ...fields } = body;
