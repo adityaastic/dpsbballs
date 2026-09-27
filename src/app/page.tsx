@@ -51,20 +51,22 @@ export default async function HomePage() {
         { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
       ];
 
-  const sec0 = pageData?.sections?.[0];
-  const sec1 = pageData?.sections?.[1];
-  const sec2 = pageData?.sections?.[2];
-  const sec3 = pageData?.sections?.[3];
+  const sections = Array.isArray(pageData?.sections) ? pageData.sections : [];
+  const whoWeAre = sections.find((s) => s.key === "who_we_are") || sections[0];
+  const productRange = sections.find((s) => s.key === "product_range");
+  const qualityCircle = sections.find((s) => s.key === "quality_circle");
+  const orderCta = sections.find((s) => s.key === "order_cta");
 
-  const whoWeAreHeading = sec0?.heading || "Precision balls engineered for demanding industry";
-  const whoWeAreSubheading = sec0?.subheading || "Who we are";
+  // Who We Are Section
+  const whoWeAreHeading = whoWeAre?.heading || "Precision balls engineered for demanding industry";
+  const whoWeAreSubheading = whoWeAre?.subheading || "Who we are";
   const whoWeAreBody =
-    sec0?.body ||
+    whoWeAre?.body ||
     "Founded by Mr. Yashpal Verma, DSP is a leading manufacturer of precision-grade balls in high carbon chrome steel, stainless steels, brass, copper, tungsten carbide, ceramics and specialty materials — made to AFBMA, DIN & ISO grades or your drawings.";
 
   const whoWeAreFeatures =
-    Array.isArray(sec0?.features) && sec0.features.length > 0
-      ? (sec0.features as string[])
+    Array.isArray(whoWeAre?.features) && whoWeAre.features.length > 0
+      ? (whoWeAre.features as string[])
       : [
           "Full in-house process capabilities",
           "Self-certification status with reputed customers",
@@ -72,9 +74,37 @@ export default async function HomePage() {
           "ISO 9001 certified quality systems",
         ];
 
-  const whoWeAreButtonText = (sec0?.buttonText as string) || "About DSP";
-  const whoWeAreButtonLink = (sec0?.buttonLink as string) || "/about";
-  const whoWeAreMediaUrl = (sec0?.videoUrl as string) || (sec0?.imageUrl as string) || "";
+  const whoWeAreButtonText = (whoWeAre?.buttonText as string) || "About DSP";
+  const whoWeAreButtonLink = (whoWeAre?.buttonLink as string) || "/about";
+  const rawWhoWeAreMedia = (whoWeAre?.videoUrl as string) || (whoWeAre?.imageUrl as string) || "";
+  const whoWeAreMediaUrl = rawWhoWeAreMedia && rawWhoWeAreMedia !== "/images/hero/hero-desktop.jpg" ? rawWhoWeAreMedia : "";
+
+  // Product Range Section
+  const productRangeSubheading = (productRange?.subheading as string) || "Product range";
+  const productRangeHeading = (productRange?.heading as string) || "Built for every grade & material";
+  const productRangeBody =
+    (productRange?.body as string) ||
+    "From bearing steel to ceramics and gauging balls — explore our core catalogue.";
+  const productRangeButtonText = (productRange?.buttonText as string) || "View all products";
+  const productRangeButtonLink = (productRange?.buttonLink as string) || "/products";
+
+  // Quality Circle Section
+  const qualityCircleSubheading = (qualityCircle?.subheading as string) || "Quality circle";
+  const qualityCircleHeading = (qualityCircle?.heading as string) || "Committed to total customer satisfaction";
+  const qualityCircleBody =
+    (qualityCircle?.body as string) ||
+    "Products are delivered after understanding technical requirements, with continual improvement of the quality management system through teamwork.";
+  const qualityCircleButtonText = (qualityCircle?.buttonText as string) || "Quality policy";
+  const qualityCircleButtonLink = (qualityCircle?.buttonLink as string) || "/quality";
+
+  // Order CTA Banner
+  const orderCtaSubheading = (orderCta?.subheading as string) || "Ready to order?";
+  const orderCtaHeading = (orderCta?.heading as string) || "Need a custom size, grade or material?";
+  const orderCtaBody =
+    (orderCta?.body as string) ||
+    "Share your drawings or technical requirements. Our team will respond promptly from ";
+  const orderCtaButtonText = (orderCta?.buttonText as string) || "Contact sales";
+  const orderCtaButtonLink = (orderCta?.buttonLink as string) || "/contact";
 
   return (
     <>
@@ -156,21 +186,20 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <p className="eyebrow" style={{ color: "var(--copper)" }}>
-                {(sec1?.subheading as string) || "Product range"}
+                {productRangeSubheading}
               </p>
               <h2 className="section-title mt-4">
-                {(sec1?.heading as string) || "Built for every grade & material"}
+                {productRangeHeading}
               </h2>
               <p className="section-copy">
-                {(sec1?.body as string) ||
-                  "From bearing steel to ceramics and gauging balls — explore our core catalogue."}
+                {productRangeBody}
               </p>
             </div>
             <Link
-              href={(sec1?.buttonLink as string) || "/products"}
+              href={productRangeButtonLink}
               className="btn btn-primary shrink-0"
             >
-              {(sec1?.buttonText as string) || "View all products"}
+              {productRangeButtonText}
             </Link>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -186,18 +215,17 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-6xl gap-8 px-4 lg:grid-cols-[1fr_1.1fr] md:px-6 items-center">
           <div className="bg-white border border-[var(--line)] rounded-2xl p-8 md:p-10 shadow-[var(--shadow-md)]">
             <p className="eyebrow" style={{ color: "var(--copper)" }}>
-              {(sec2?.subheading as string) || "Quality circle"}
+              {qualityCircleSubheading}
             </p>
             <h2 className="section-title mt-4">
-              {(sec2?.heading as string) || "Committed to total customer satisfaction"}
+              {qualityCircleHeading}
             </h2>
             <p className="section-copy">
-              {(sec2?.body as string) ||
-                "Products are delivered after understanding technical requirements, with continual improvement of the quality management system through teamwork."}
+              {qualityCircleBody}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/quality" className="btn btn-primary">
-                Quality policy
+              <Link href={qualityCircleButtonLink} className="btn btn-primary">
+                {qualityCircleButtonText}
               </Link>
               <Link
                 href="/technical"
@@ -294,24 +322,22 @@ export default async function HomePage() {
             <div className="relative grid gap-8 md:grid-cols-[1.5fr_auto] md:items-center">
               <div>
                 <p className="eyebrow text-[var(--gold-light)]">
-                  {(sec3?.subheading as string) || "Ready to order?"}
+                  {orderCtaSubheading}
                 </p>
                 <h2 className="mt-4 font-display text-3xl md:text-4xl tracking-wide">
-                  {(sec3?.heading as string) ||
-                    "Need a custom size, grade or material?"}
+                  {orderCtaHeading}
                 </h2>
                 <p className="mt-4 max-w-xl text-white/70 leading-relaxed">
-                  {(sec3?.body as string) ||
-                    "Share your drawings or technical requirements. Our team will respond promptly from "}
+                  {orderCtaBody}
                   <span className="text-[var(--gold-light)]">{site.email}</span>.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
-                  href={(sec3?.buttonLink as string) || "/contact"}
+                  href={orderCtaButtonLink}
                   className="btn btn-accent"
                 >
-                  {(sec3?.buttonText as string) || "Contact sales"}
+                  {orderCtaButtonText}
                 </Link>
                 <Link href="/products" className="btn btn-ghost">
                   Browse products

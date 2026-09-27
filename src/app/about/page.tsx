@@ -25,12 +25,17 @@ export default async function AboutPage() {
     getProducts(),
   ]);
 
+  const sections = Array.isArray(pageData?.sections) ? pageData.sections : [];
+  const storySection = sections.find((s) => s.key === "story") || sections[0];
+  const manufactureSection = sections.find((s) => s.key === "manufacture") || sections[1];
+  const certSection = sections.find((s) => s.key === "certifications") || sections[2];
+
   const storyMediaUrl =
-    (pageData?.sections?.[0]?.videoUrl as string) ||
-    (pageData?.sections?.[0]?.imageUrl as string) ||
+    (storySection?.videoUrl as string) ||
+    (storySection?.imageUrl as string) ||
     "";
 
-  const storyBody = (typeof pageData?.sections?.[0]?.body === "string" ? pageData.sections[0].body : "") || `
+  const storyBody = (typeof storySection?.body === "string" ? storySection.body : "") || `
 DSP is one of the leading manufacturers of precision grade balls from high carbon steel & chrome steel, stainless steels, brass, copper, silver, tungsten carbide, ceramics and other materials against specific demand (glass, plastic, nitride and more).
 
 Products are made as per AFBMA, DIN & ISO grades — and as asked by customers, either from product drawings or after understanding technical requirements. We bring more than 25 years of focused experience in these products.
@@ -58,7 +63,7 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
         <div className="mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-2 md:px-6">
           <div>
             <h2 className="section-title">
-              {(pageData?.sections?.[0]?.heading as string) || "Our story"}
+              {(storySection?.heading as string) || "Our story"}
             </h2>
             <div className="mt-5 space-y-4 text-[var(--muted)] leading-relaxed">
               {storyBody.split(/\n\n+/).map((para: string, i: number) => (
@@ -99,10 +104,10 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
       <section className="section bg-[var(--surface)]">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <h2 className="section-title">
-            {(pageData?.sections?.[1]?.heading as string) || "What we manufacture"}
+            {(manufactureSection?.heading as string) || "What we manufacture"}
           </h2>
           <p className="section-copy">
-            {(pageData?.sections?.[1]?.body as string) || "A complete range of precision balls and allied products."}
+            {(manufactureSection?.body as string) || "A complete range of precision balls and allied products."}
           </p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((p, i) => (
@@ -127,13 +132,13 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[var(--orange)]/10 text-[var(--orange-deep)] border border-[var(--orange)]/20 shadow-xs mb-3">
               <span className="w-2 h-2 rounded-full bg-[var(--orange)] animate-pulse" />
-              {(pageData?.sections?.[2]?.subheading as string) || "Certified Quality & Global Accreditation"}
+              {(certSection?.subheading as string) || "Certified Quality & Global Accreditation"}
             </span>
             <h2 className="section-title mt-2">
-              {(pageData?.sections?.[2]?.heading as string) || "ISO 9001:2015 Quality & International Accreditations"}
+              {(certSection?.heading as string) || "ISO 9001:2015 Quality & International Accreditations"}
             </h2>
             <p className="section-copy mt-3">
-              {(pageData?.sections?.[2]?.body as string) || "Our precision manufacturing operations adhere strictly to global quality management systems and international accreditation frameworks."}
+              {(certSection?.body as string) || "Our precision manufacturing operations adhere strictly to global quality management systems and international accreditation frameworks."}
             </p>
           </div>
 
