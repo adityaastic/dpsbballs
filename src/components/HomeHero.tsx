@@ -99,18 +99,16 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 
   return (
     <section className="home-hero">
-      {/* DESKTOP SINGLE MEDIA (NO SLIDER) */}
+      {/* DESKTOP FULL-PAGE BANNER */}
       <div className="home-hero-media home-hero-media-desktop">
         {desktopUrl ? (
-          <div className="hero-layer active">
-            <HeroMediaItem
-              url={desktopUrl}
-              alt="Desktop Hero Banner"
-              className="w-full h-full object-contain"
-            />
-          </div>
+          <HeroMediaItem
+            url={desktopUrl}
+            alt="DSP Precision Products Banner"
+            className="w-full h-auto block"
+          />
         ) : (
-          <div className="hero-fallback-bg" />
+          <div className="hero-fallback-bg w-full aspect-[16/7] min-h-[480px]" />
         )}
       </div>
 

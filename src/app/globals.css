@@ -501,10 +501,7 @@ a { color: inherit; text-decoration: none; }
 .home-hero {
   position: relative;
   width: 100%;
-  min-height: clamp(380px, 68vh, 850px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   overflow: hidden;
   color: #fff;
   background: #0b1626;
@@ -512,44 +509,30 @@ a { color: inherit; text-decoration: none; }
 
 /* ── DESKTOP ── */
 .home-hero-media-desktop {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   width: 100%;
-  height: 100%;
+  display: block;
 }
 @media (max-width: 767.98px) {
-  .home-hero-media-desktop { display: none; }
+  .home-hero-media-desktop { display: none !important; }
 }
 @media (min-width: 768px) {
-  .home-hero-media-mobile { display: none; }
+  .home-hero-media-mobile { display: none !important; }
 }
 
 /* Desktop Hero Slide Layers — Full Banner Uncropped */
 .hero-layer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.8s ease-in-out;
-  will-change: opacity;
-  z-index: 1;
-  image-rendering: -webkit-optimize-contrast;
-}
-.hero-layer.active {
-  opacity: 1;
-  z-index: 2;
+  position: relative;
+  width: 100%;
+  display: block;
 }
 
 /* Fallback background when no image uploaded */
 .hero-fallback-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  min-height: 480px;
   background:
     radial-gradient(ellipse 70% 60% at 75% 25%, rgba(251,191,36,0.40) 0%, transparent 60%),
     radial-gradient(circle at 15% 80%, rgba(194,65,12,0.60) 0%, transparent 50%),
@@ -572,8 +555,10 @@ a { color: inherit; text-decoration: none; }
 
 /* ── MOBILE CAROUSEL ── */
 .home-hero-media-mobile {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 10 / 16;
+  max-height: 88vh;
   background: #0b1626;
   overflow: hidden;
 }
