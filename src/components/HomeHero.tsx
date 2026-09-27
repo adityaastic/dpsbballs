@@ -60,13 +60,13 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 
   const normalizedSlides = slides && slides.length > 0 ? slides : [];
 
-  // Desktop slides setup
-  const desktopSlides = normalizedSlides.filter((s) => Boolean(s.desktopUrl || s.mobileUrl));
+  // Desktop slides setup: ONLY slides that have a dedicated desktopUrl!
+  const desktopSlides = normalizedSlides.filter((s) => Boolean(s.desktopUrl && s.desktopUrl.trim() !== ""));
   const effectiveDesktopSlides = desktopSlides.length > 0 ? desktopSlides : [
-    { desktopUrl: defaultFallbackImage, mobileUrl: defaultFallbackImage, headline: "", subline: "", order: 0 }
+    { desktopUrl: defaultFallbackImage, mobileUrl: "", headline: "", subline: "", order: 0 }
   ];
 
-  // Desktop auto-advance when multiple slides exist
+  // Desktop auto-advance when multiple desktop slides exist
   useEffect(() => {
     if (effectiveDesktopSlides.length <= 1) return;
     desktopIntervalRef.current = setInterval(() => {
@@ -90,9 +90,10 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   };
 
   // Mobile slides setup (ensure at least 3 slides for smooth carousel)
-  let mobileSlides = [...normalizedSlides];
+  const mobileSlidesRaw = normalizedSlides.filter((s) => Boolean(s.mobileUrl?.trim() || s.desktopUrl?.trim()));
+  let mobileSlides = [...mobileSlidesRaw];
   while (mobileSlides.length > 0 && mobileSlides.length < 3) {
-    mobileSlides = [...mobileSlides, ...normalizedSlides].slice(0, 3);
+    mobileSlides = [...mobileSlides, ...mobileSlidesRaw].slice(0, 3);
   }
   if (mobileSlides.length === 0) {
     mobileSlides = [
@@ -143,20 +144,23 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 
   return (
     <section className="home-hero">
-      {/* DESKTOP FULL-PAGE BANNER (PHOTO / VIDEO SUPPORT) */}
-      <div className="home-hero-media home-hero-media-desktop relative overflow-hidden group">
+      {/* DESKTOP FULL-SCREEN BANNER (FITTED TO DESKTOP SCREEN SIZE) */}
+      <div className="home-hero-media home-hero-media-desktop relative overflow-hidden group w-full bg-[#081426] h-[calc(100vh-105px)] max-h-[820px] min-h-[460px] flex items-center justify-center">
         <div
-          className="flex w-full transition-transform duration-700 ease-out"
+          className="flex w-full h-full transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${activeDesktopIdx * 100}%)` }}
         >
           {effectiveDesktopSlides.map((slide, idx) => {
-            const url = slide.desktopUrl || slide.mobileUrl || defaultFallbackImage;
+            const url = slide.desktopUrl || defaultFallbackImage;
             return (
-              <div key={`desk-${idx}`} className="w-full shrink-0 flex-none">
+              <div
+                key={`desk-${idx}`}
+                className="w-full h-full shrink-0 flex-none flex items-center justify-center relative bg-[#081426]"
+              >
                 <HeroMediaItem
                   url={url}
                   alt={slide.headline || `DSP Precision Products Banner ${idx + 1}`}
-                  className="w-full h-auto block"
+                  className="w-full h-full object-contain object-center block"
                 />
               </div>
             );
@@ -246,3 +250,4 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 }
 
 export default HomeHero;
+
