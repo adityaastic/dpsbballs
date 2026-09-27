@@ -6,9 +6,22 @@ import { getProduct, getProducts } from "@/lib/cms";
 
 type Props = { params: Promise<{ slug: string }> };
 
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
+export const revalidate = 0;
+
 export async function generateStaticParams() {
   const products = await getProducts();
-  return products.map((p) => ({ slug: p.slug }));
+  const set = new Set<string>();
+  products.forEach((p) => {
+    set.add(p.slug);
+    if (p.slug.endsWith("s")) set.add(p.slug.slice(0, -1));
+    if (p.slug.includes("aluminium")) {
+      set.add(p.slug.replace("aluminium", "aluminum"));
+      if (p.slug.endsWith("s")) set.add(p.slug.replace("aluminium", "aluminum").slice(0, -1));
+    }
+  });
+  return Array.from(set).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

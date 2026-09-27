@@ -47,8 +47,8 @@ export async function POST(request: NextRequest) {
     if (authRes) return authRes;
 
     const body = await request.json();
-    const slug =
-      body.slug || slugify(body.title || "product", { lower: true, strict: true });
+    const rawSlug = body.slug ? body.slug.trim() : (body.title || "product");
+    const slug = slugify(rawSlug, { lower: true, strict: true });
 
     const supabase = getSupabaseAdmin();
     const { data: product, error } = await supabase

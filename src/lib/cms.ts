@@ -134,28 +134,72 @@ export async function getProducts(): Promise<StaticProductType[]> {
       return staticProducts;
     }
 
-    return (data as DbProductRow[]).map((p) => ({
-      _id: p.id,
-      id: p.id,
-      slug: p.slug,
-      title: p.title,
-      short: p.short || "",
-      description: p.description || "",
-      imageUrl:
-        p.image_url && !p.image_url.startsWith("/images/products/")
-          ? p.image_url
-          : undefined,
-      highlights: p.highlights || [],
-      grades: p.grades || [],
-      specs: p.specs || [],
-      tables: p.tables || [],
-    }));
+    return (data as DbProductRow[]).map((p) => {
+      const cleanSlug = (p.slug || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      return {
+        _id: p.id,
+        id: p.id,
+        slug: cleanSlug || p.slug,
+        title: p.title?.trim() || "",
+        short: p.short || "",
+        description: p.description || "",
+        imageUrl:
+          p.image_url && !p.image_url.startsWith("/images/products/")
+            ? p.image_url
+            : undefined,
+        highlights: p.highlights || [],
+        grades: p.grades || [],
+        specs: p.specs || [],
+        tables: p.tables || [],
+      };
+    });
   }, staticProducts);
 }
 
 export async function getProduct(slug: string): Promise<StaticProductType | undefined> {
   const all = await getProducts();
-  return all.find((p) => p.slug === slug);
+  if (!slug) return undefined;
+
+  const raw = decodeURIComponent(slug).trim().toLowerCase();
+  const clean = raw.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+  // 1. Direct match on clean slug
+  const direct = all.find((p) => p.slug === clean || p.slug === raw);
+  if (direct) return direct;
+
+  // 2. Singular / Plural match (e.g. aluminium-ball -> aluminium-balls, or vice versa)
+  const singular = clean.endsWith("s") ? clean.slice(0, -1) : clean;
+  const plural = clean.endsWith("s") ? clean : `${clean}s`;
+
+  // 3. Alternative spellings (e.g. aluminium <-> aluminum)
+  const variants = new Set([
+    clean,
+    singular,
+    plural,
+    clean.replace(/aluminium/g, "aluminum"),
+    clean.replace(/aluminum/g, "aluminium"),
+    singular.replace(/aluminium/g, "aluminum"),
+    singular.replace(/aluminum/g, "aluminium"),
+    plural.replace(/aluminium/g, "aluminum"),
+    plural.replace(/aluminum/g, "aluminium"),
+  ]);
+
+  return all.find((p) => {
+    const pSlug = p.slug.toLowerCase().trim();
+    const pClean = pSlug.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const pSingular = pClean.endsWith("s") ? pClean.slice(0, -1) : pClean;
+    const pPlural = pClean.endsWith("s") ? pClean : `${pClean}s`;
+    return (
+      variants.has(pSlug) ||
+      variants.has(pClean) ||
+      variants.has(pSingular) ||
+      variants.has(pPlural)
+    );
+  });
 }
 
 export async function getSiteData() {

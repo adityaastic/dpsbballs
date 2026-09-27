@@ -262,6 +262,46 @@ export const products: Product[] = [
     grades: ["Balls", "Balcones / Cones", "Pins", "Satellites & Double-cones", "Diagonals"],
   },
   {
+    slug: "aluminium-balls",
+    title: "Aluminium Balls",
+    short: "Lightweight, durable, corrosion-resistant precision balls designed for industrial, engineering, and specialized applications.",
+    description:
+      "Aluminium Balls are precision-manufactured metal spheres known for their lightweight, corrosion resistance, and excellent durability. They are widely used in industrial, engineering, decorative, and specialized applications where strength and low weight are important.",
+    imageUrl: "https://yvhikjqcvowhpxqvkbfx.supabase.co/storage/v1/object/public/media/general/1790511084528-ChatGPT_Image_Sep_27__2026__05_40_42_PM.png",
+    highlights: [
+      "Lightweight & Durable",
+      "Excellent Corrosion Resistance",
+      "High Precision & Smooth Finish",
+      "Available in Multiple Sizes & Grades",
+    ],
+    grades: [
+      "Aluminium 1100",
+      "Aluminium 2024",
+      "Aluminium 5052",
+      "Aluminium 6061",
+    ],
+    specs: [
+      {
+        label: "Grade-dependent",
+        value: "2.70 g/cm³",
+      },
+    ],
+  },
+  {
+    slug: "silicon-nitride-balls",
+    title: "Silicon Nitride Balls",
+    short: "High-temperature, non-magnetic, corrosion-resistant ceramic balls for extreme conditions.",
+    description:
+      "Silicon Nitride (Si3N4) balls deliver superior performance in high-speed bearings, aerospace, vacuum systems, and medical equipment. They feature high hardness, exceptional wear resistance, and zero electrical conductivity.",
+    highlights: [
+      "Si3N4 Ceramic",
+      "60% lighter than steel balls",
+      "Non-magnetic & electrically insulating",
+      "Operates up to 1000°C",
+    ],
+    grades: ["Grade 5", "Grade 10", "Grade 25"],
+  },
+  {
     slug: "other-materials",
     title: "Other Material Balls",
     short: "Plastic, Monel, zinc, silver alloy, aluminum and more.",

@@ -67,7 +67,7 @@ export async function PUT(
     if (body.published !== undefined) updateData.published = body.published;
 
     if (body.slug) {
-      updateData.slug = body.slug;
+      updateData.slug = slugify(body.slug.trim(), { lower: true, strict: true });
     } else if (body.title && !body.slug) {
       updateData.slug = slugify(body.title, { lower: true, strict: true });
     }
