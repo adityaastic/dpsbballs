@@ -70,12 +70,11 @@ export async function PUT(
       updateData.body_html = body.bodyHtml ?? body.body_html;
     }
 
-    const { data: page, error } = await supabase
-      .from("page_contents")
-      .update(updateData)
-      .eq("id", id)
-      .select()
-      .single();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const updateQuery = supabase.from("page_contents").update(updateData);
+    const { data: page, error } = isUuid
+      ? await updateQuery.eq("id", id).select().single()
+      : await updateQuery.eq("slug", id).select().single();
 
     if (error || !page) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });

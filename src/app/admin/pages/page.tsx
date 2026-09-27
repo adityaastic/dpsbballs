@@ -211,7 +211,14 @@ export default function AdminPagesList() {
                 return (
                   <tr key={p._id} className="hover:bg-slate-50/50">
                     <td className="px-6 py-4 font-semibold text-slate-900">
-                      {p.title}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span>{p.title}</span>
+                        {p.slug === "home" && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[0.68rem] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                            🏠 Includes &quot;Who We Are&quot; &amp; Page Sections
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 font-mono text-xs text-amber-700">
                       {liveUrl}
