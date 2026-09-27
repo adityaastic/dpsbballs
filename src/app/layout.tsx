@@ -202,8 +202,8 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${barlow.variable} ${barlowCondensed.variable} h-full`}>
-      <head>
-        {seo.googleAnalyticsId && (
+      <body className="min-h-full flex flex-col antialiased">
+        {seo.googleAnalyticsId ? (
           <>
             <Script
               strategy="afterInteractive"
@@ -222,9 +222,7 @@ export default async function RootLayout({
               }}
             />
           </>
-        )}
-      </head>
-      <body className="min-h-full flex flex-col antialiased">
+        ) : null}
         <SeoSchema site={site} />
         <Header navLinks={navLinks} site={site} />
         <main className="flex-1">{children}</main>
