@@ -3,6 +3,9 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import { uploadToSupabaseStorage } from "@/lib/supabaseStorage";
 import { requireAuth } from "@/lib/authGuard";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export async function GET() {
   try {
     const supabase = getSupabaseAdmin();

@@ -9,10 +9,230 @@ import AdminPageHeader, {
   useToast,
 } from "@/components/admin/AdminUI";
 
+function isVideo(url?: string): boolean {
+  if (!url) return false;
+  return (
+    /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url) ||
+    url.includes("/video/") ||
+    url.startsWith("data:video/")
+  );
+}
+
+interface BannerMediaSlotProps {
+  label: string;
+  recommendedSize: string;
+  url: string;
+  isMobileSlot?: boolean;
+  uploading: boolean;
+  onUpload: (file: File) => void;
+  onChangeUrl: (newUrl: string) => void;
+  onRemove: () => void;
+}
+
+function BannerMediaSlot({
+  label,
+  recommendedSize,
+  url,
+  isMobileSlot = false,
+  uploading,
+  onUpload,
+  onChangeUrl,
+  onRemove,
+}: BannerMediaSlotProps) {
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [customUrl, setCustomUrl] = useState(url);
+
+  useEffect(() => {
+    setCustomUrl(url);
+  }, [url]);
+
+  const hasMedia = Boolean(url);
+  const isVid = isVideo(url);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-semibold text-slate-700">{label}</label>
+        {hasMedia && (
+          <span
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[0.7rem] font-bold tracking-wide uppercase ${
+              isVid
+                ? "bg-purple-100 text-purple-800 border border-purple-200"
+                : "bg-blue-100 text-blue-800 border border-blue-200"
+            }`}
+          >
+            {isVid ? "🎬 Video Banner" : "🖼️ Photo Banner"}
+          </span>
+        )}
+      </div>
+
+      <div
+        className={`border-2 border-dashed border-slate-300 rounded-xl p-4 transition-colors ${
+          hasMedia ? "bg-white" : "bg-slate-50/80 hover:bg-slate-100/60"
+        }`}
+      >
+        {uploading ? (
+          <div className="py-12 text-center space-y-3">
+            <div className="inline-block animate-spin w-8 h-8 border-3 border-amber-600 border-t-transparent rounded-full" />
+            <div className="text-sm font-semibold text-slate-800">
+              Uploading Video / Photo...
+            </div>
+            <div className="text-xs text-slate-500">
+              Processing media into cloud storage. Please wait.
+            </div>
+          </div>
+        ) : hasMedia ? (
+          <div className="space-y-3">
+            {/* Live Media Preview Box */}
+            <div
+              className={`relative rounded-lg overflow-hidden border border-slate-200 bg-slate-900 shadow-sm mx-auto ${
+                isMobileSlot
+                  ? "aspect-[3/4] max-w-[200px]"
+                  : "aspect-[16/9] w-full"
+              }`}
+            >
+              {isVid ? (
+                <video
+                  src={url}
+                  controls
+                  muted
+                  playsInline
+                  loop
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={url}
+                  alt="Banner preview"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+
+            {/* Media URL badge / editor toggle */}
+            <div className="text-center">
+              <span className="text-[0.72rem] text-slate-500 truncate block max-w-full px-2">
+                {url}
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 justify-center items-center pt-1">
+              <label className="text-xs px-3.5 py-1.5 bg-slate-800 text-white font-medium rounded-lg cursor-pointer hover:bg-slate-900 transition shadow-xs">
+                <span>📁 Upload New File</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*,video/*"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) onUpload(f);
+                  }}
+                />
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setShowUrlInput((v) => !v)}
+                className="text-xs px-3 py-1.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition"
+              >
+                🔗 {showUrlInput ? "Hide URL" : "Edit URL"}
+              </button>
+
+              <button
+                type="button"
+                onClick={onRemove}
+                className="text-xs px-3 py-1.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition"
+              >
+                🗑️ Remove
+              </button>
+            </div>
+
+            {showUrlInput && (
+              <div className="pt-2 flex gap-2">
+                <input
+                  type="url"
+                  className={inputClass()}
+                  value={customUrl}
+                  onChange={(e) => setCustomUrl(e.target.value)}
+                  placeholder="Paste direct MP4 or Image URL"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChangeUrl(customUrl);
+                    setShowUrlInput(false);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shrink-0"
+                >
+                  Apply
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="py-6 space-y-4 text-center">
+            {/* Direct File Upload Area */}
+            <label className="block cursor-pointer p-4 rounded-lg hover:bg-white transition border border-transparent hover:border-slate-200">
+              <div className="text-4xl mb-2">🎬 / 🖼️</div>
+              <div className="text-sm font-semibold text-slate-800 mb-1">
+                Upload Video or Photo Banner
+              </div>
+              <div className="text-xs text-slate-500 mb-1">
+                Supports MP4, WebM, MOV video OR JPG, PNG, WebP image
+              </div>
+              <div className="text-[0.7rem] font-medium text-amber-700">
+                Recommended: {recommendedSize}
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onUpload(f);
+                }}
+              />
+            </label>
+
+            {/* Alternative: Direct URL entry */}
+            <div className="border-t border-slate-200/80 pt-3">
+              <div className="text-[0.72rem] text-slate-500 mb-1.5">
+                Or paste a direct Video or Photo URL:
+              </div>
+              <div className="flex gap-2 max-w-md mx-auto">
+                <input
+                  type="url"
+                  className={inputClass()}
+                  value={customUrl}
+                  onChange={(e) => setCustomUrl(e.target.value)}
+                  placeholder="https://... (mp4, webm, jpg, png)"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (customUrl.trim()) onChangeUrl(customUrl.trim());
+                  }}
+                  disabled={!customUrl.trim()}
+                  className="px-3.5 py-1.5 text-xs bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white font-medium rounded-lg shrink-0 transition"
+                >
+                  Save URL
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminHeroPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
   const { show, ToastContainer } = useToast();
 
   const loadSettings = async () => {
@@ -29,7 +249,7 @@ export default function AdminHeroPage() {
         ];
       }
       setData(s);
-    } catch (e: any) {
+    } catch {
       show("Failed to load hero slides", "error");
     } finally {
       setLoading(false);
@@ -73,8 +293,18 @@ export default function AdminHeroPage() {
     }
   };
 
-  const uploadHeroImage = async (file: File, idx: number, field: "desktopUrl" | "mobileUrl") => {
+  const uploadHeroMedia = async (
+    file: File,
+    idx: number,
+    field: "desktopUrl" | "mobileUrl"
+  ) => {
+    const key = `${idx}-${field}`;
+    setUploadingKey(key);
     try {
+      if (file.size > 100 * 1024 * 1024) {
+        throw new Error("File exceeds 100MB limit. Please compress or optimize the video.");
+      }
+
       const form = new FormData();
       form.append("files", file);
       const res = await fetch("/api/admin/media", {
@@ -88,7 +318,13 @@ export default function AdminHeroPage() {
         setData((d: any) => {
           const heroSlides = Array.isArray(d?.heroSlides) ? [...d.heroSlides] : [];
           while (heroSlides.length <= idx) {
-            heroSlides.push({ desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: heroSlides.length });
+            heroSlides.push({
+              desktopUrl: "",
+              mobileUrl: "",
+              headline: "",
+              subline: "",
+              order: heroSlides.length,
+            });
           }
           heroSlides[idx] = {
             desktopUrl: "",
@@ -103,17 +339,30 @@ export default function AdminHeroPage() {
           persistSettings(nextData);
           return nextData;
         });
+        show("Media uploaded and published live!", "success");
       }
     } catch (e: any) {
-      show(e.message, "error");
+      show(e.message || "Upload failed", "error");
+    } finally {
+      setUploadingKey(null);
     }
   };
 
-  const heroSlideSet = (i: number, field: "desktopUrl" | "mobileUrl" | "headline" | "subline" | "order", v: any) =>
+  const heroSlideSet = (
+    i: number,
+    field: "desktopUrl" | "mobileUrl" | "headline" | "subline" | "order",
+    v: any
+  ) =>
     setData((d: any) => {
       const heroSlides = Array.isArray(d?.heroSlides) ? [...d.heroSlides] : [];
       while (heroSlides.length <= i) {
-        heroSlides.push({ desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: heroSlides.length });
+        heroSlides.push({
+          desktopUrl: "",
+          mobileUrl: "",
+          headline: "",
+          subline: "",
+          order: heroSlides.length,
+        });
       }
       heroSlides[i] = {
         desktopUrl: "",
@@ -130,7 +379,16 @@ export default function AdminHeroPage() {
   const heroSlideAdd = () =>
     setData((d: any) => ({
       ...d,
-      heroSlides: [...(d.heroSlides || []), { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: (d.heroSlides?.length || 0) }],
+      heroSlides: [
+        ...(d.heroSlides || []),
+        {
+          desktopUrl: "",
+          mobileUrl: "",
+          headline: "",
+          subline: "",
+          order: d.heroSlides?.length || 0,
+        },
+      ],
     }));
 
   const heroSlideRemove = () =>
@@ -145,7 +403,7 @@ export default function AdminHeroPage() {
     return (
       <div className="space-y-8">
         <ToastContainer />
-        <AdminPageHeader title="Home Hero Slider" />
+        <AdminPageHeader title="Home Hero Banner (Video & Photo)" />
         <div className="p-12 bg-white border border-slate-200 rounded-lg text-center text-slate-500">
           Loading hero banner settings...
         </div>
@@ -153,18 +411,21 @@ export default function AdminHeroPage() {
     );
   }
 
-  const slidesList = Array.isArray(data.heroSlides) && data.heroSlides.length > 0 ? data.heroSlides : [
-    { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 0 },
-    { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 1 },
-    { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
-  ];
+  const slidesList =
+    Array.isArray(data.heroSlides) && data.heroSlides.length > 0
+      ? data.heroSlides
+      : [
+          { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 0 },
+          { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 1 },
+          { desktopUrl: "", mobileUrl: "", headline: "", subline: "", order: 2 },
+        ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <ToastContainer />
       <AdminPageHeader
-        title="🖼️ Home Page Banner & Hero Slider"
-        description="Upload, update and manage banner images displayed on your homepage."
+        title="🎬 Home Page Banner & Hero Slider (Video & Photo)"
+        description="Upload or link high-impact Video and Photo banners for both Desktop and Mobile views."
         actions={
           <div className="flex gap-3">
             <Link
@@ -177,7 +438,7 @@ export default function AdminHeroPage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2 text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white shadow-md transition"
+              className="px-5 py-2 text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white shadow-md transition cursor-pointer"
             >
               💾 {saving ? "Publishing..." : "Save & Publish Slides"}
             </button>
@@ -186,18 +447,19 @@ export default function AdminHeroPage() {
       />
 
       {/* Guide Banner */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-slate-900/5 border border-amber-500/20 text-slate-800 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-md">
-          🖼️
+      <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/5 to-slate-900/5 border border-amber-500/20 text-slate-800 flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-purple-600 text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-md">
+          🎬
         </div>
         <div>
           <h3 className="font-bold text-slate-900 text-base">
-            How to Update Your Homepage Banner Images
+            Homepage Video &amp; Photo Banner Options
           </h3>
           <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-            1. Select <strong>"Upload Desktop Image"</strong> or <strong>"Upload Mobile Image"</strong> below.<br />
-            2. When you pick a file, it will <strong>automatically upload and publish live to your homepage</strong>.<br />
-            3. You can add multiple slides for the mobile touch carousel or keep a single high-impact banner image.
+            • <strong>Video &amp; Photo Support:</strong> You can upload or link video files (MP4, WebM, MOV) or images (JPG, PNG, WebP) for both <strong>Desktop</strong> and <strong>Mobile</strong> views.<br />
+            • <strong>Automatic Autoplay:</strong> Videos automatically autoplay muted in a smooth loop on all devices and modern mobile browsers.<br />
+            • <strong>Full-Page Edge-to-Edge:</strong> Desktop banners stretch edge-to-edge across the screen with zero distortion or forced clipping.<br />
+            • <strong>Multi-Slide Touch Carousel:</strong> Add multiple slides to enable automatic transitions and swipe controls on mobile and desktop.
           </p>
         </div>
       </div>
@@ -207,41 +469,41 @@ export default function AdminHeroPage() {
           <div>
             <h3 className="font-semibold text-slate-900 text-lg">Active Hero Banner Slides</h3>
             <p className="text-xs text-slate-500 mt-1">
-              Desktop (≥1800×900px) &amp; Mobile (≥900×1200px) images.
+              Desktop (≥1800×900) &amp; Mobile (≥900×1200 or 9:16 portrait) media.
             </p>
           </div>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={heroSlideRemove}
-              className="text-xs px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-100 transition"
+              className="text-xs px-3 py-1.5 border border-slate-300 rounded-lg hover:bg-slate-100 transition cursor-pointer"
             >
               − Remove Slide
             </button>
             <button
               type="button"
               onClick={heroSlideAdd}
-              className="text-xs px-3 py-1.5 bg-slate-900 text-white rounded hover:bg-slate-800 transition"
+              className="text-xs px-3 py-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition cursor-pointer"
             >
               ＋ Add Slide
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="text-xs px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded shadow-sm transition"
+              className="text-xs px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-sm transition cursor-pointer"
             >
               💾 Save Slides
             </button>
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {slidesList.map((slide: any, i: number) => (
             <div
               key={i}
-              className="border border-slate-200 rounded-2xl p-5 space-y-5 bg-gradient-to-br from-slate-50/70 to-white shadow-xs"
+              className="border border-slate-200 rounded-2xl p-6 space-y-5 bg-gradient-to-br from-slate-50/70 to-white shadow-xs"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-bold tracking-wider uppercase border border-amber-500/20">
                   <span className="w-5 h-5 rounded-full bg-amber-600 text-white grid place-items-center text-[0.65rem] font-bold">
                     {i + 1}
@@ -254,124 +516,74 @@ export default function AdminHeroPage() {
                       type="number"
                       className={inputClass()}
                       value={slide.order ?? i}
-                      onChange={(e) => heroSlideSet(i, "order", parseInt(e.target.value) || i)}
+                      onChange={(e) =>
+                        heroSlideSet(i, "order", parseInt(e.target.value) || i)
+                      }
                     />
                   </Field>
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Desktop Banner Image Upload */}
-                <div>
-                  <Field label="Desktop Banner Image (1800×900 recommended)">
-                    <div className={`border-2 border-dashed border-slate-300 rounded-xl p-4 text-center ${slide.desktopUrl ? "bg-white" : "bg-slate-50"}`}>
-                      {slide.desktopUrl ? (
-                        <div className="space-y-3">
-                          <div className="relative aspect-[16/9] rounded-lg overflow-hidden border border-slate-200 shadow-sm">
-                            <img
-                              src={slide.desktopUrl}
-                              alt={`Desktop Slide ${i + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex gap-2 justify-center">
-                            <label className="text-xs px-3.5 py-1.5 bg-slate-800 text-white font-medium rounded-lg cursor-pointer hover:bg-slate-900 transition">
-                              Replace Image
-                              <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "desktopUrl")}
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                heroSlideSet(i, "desktopUrl", "");
-                                persistSettings(data);
-                              }}
-                              className="text-xs px-3 py-1.5 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-100 transition"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <label className="block cursor-pointer py-10">
-                          <div className="text-4xl opacity-40 mb-2">🖼️</div>
-                          <div className="text-sm font-semibold text-slate-700 mb-1">
-                            Click to upload Desktop Banner Image
-                          </div>
-                          <div className="text-xs text-slate-400">JPG, PNG, WebP · ≥1800×900px</div>
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "desktopUrl")}
-                          />
-                        </label>
-                      )}
-                    </div>
-                  </Field>
-                </div>
+                {/* Desktop Media Slot */}
+                <BannerMediaSlot
+                  label="Desktop Banner (Video or Photo)"
+                  recommendedSize="1800×900px or 16:9 ratio"
+                  url={slide.desktopUrl || ""}
+                  isMobileSlot={false}
+                  uploading={uploadingKey === `${i}-desktopUrl`}
+                  onUpload={(file) => uploadHeroMedia(file, i, "desktopUrl")}
+                  onChangeUrl={(newUrl) => {
+                    heroSlideSet(i, "desktopUrl", newUrl);
+                    persistSettings({
+                      ...data,
+                      heroSlides: data.heroSlides.map((s: any, idx: number) =>
+                        idx === i ? { ...s, desktopUrl: newUrl } : s
+                      ),
+                    });
+                  }}
+                  onRemove={() => {
+                    heroSlideSet(i, "desktopUrl", "");
+                    persistSettings({
+                      ...data,
+                      heroSlides: data.heroSlides.map((s: any, idx: number) =>
+                        idx === i ? { ...s, desktopUrl: "" } : s
+                      ),
+                    });
+                  }}
+                />
 
-                {/* Mobile Banner Image Upload */}
-                <div>
-                  <Field label="Mobile Banner Image (900×1200 recommended)">
-                    <div className={`border-2 border-dashed border-slate-300 rounded-xl p-4 text-center ${slide.mobileUrl ? "bg-white" : "bg-slate-50"}`}>
-                      {slide.mobileUrl ? (
-                        <div className="space-y-3">
-                          <div className="relative aspect-[3/4] max-w-[180px] mx-auto rounded-lg overflow-hidden border border-slate-200 shadow-sm">
-                            <img
-                              src={slide.mobileUrl}
-                              alt={`Mobile Slide ${i + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex gap-2 justify-center">
-                            <label className="text-xs px-3.5 py-1.5 bg-slate-800 text-white font-medium rounded-lg cursor-pointer hover:bg-slate-900 transition">
-                              Replace Image
-                              <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "mobileUrl")}
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                heroSlideSet(i, "mobileUrl", "");
-                                persistSettings(data);
-                              }}
-                              className="text-xs px-3 py-1.5 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-100 transition"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <label className="block cursor-pointer py-10">
-                          <div className="text-4xl opacity-40 mb-2">📱</div>
-                          <div className="text-sm font-semibold text-slate-700 mb-1">
-                            Click to upload Mobile Banner Image
-                          </div>
-                          <div className="text-xs text-slate-400">Portrait · JPG, PNG · ≥900×1200px</div>
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "mobileUrl")}
-                          />
-                        </label>
-                      )}
-                    </div>
-                  </Field>
-                </div>
+                {/* Mobile Media Slot */}
+                <BannerMediaSlot
+                  label="Mobile Banner (Video or Photo)"
+                  recommendedSize="900×1200px or 9:16 portrait ratio"
+                  url={slide.mobileUrl || ""}
+                  isMobileSlot={true}
+                  uploading={uploadingKey === `${i}-mobileUrl`}
+                  onUpload={(file) => uploadHeroMedia(file, i, "mobileUrl")}
+                  onChangeUrl={(newUrl) => {
+                    heroSlideSet(i, "mobileUrl", newUrl);
+                    persistSettings({
+                      ...data,
+                      heroSlides: data.heroSlides.map((s: any, idx: number) =>
+                        idx === i ? { ...s, mobileUrl: newUrl } : s
+                      ),
+                    });
+                  }}
+                  onRemove={() => {
+                    heroSlideSet(i, "mobileUrl", "");
+                    persistSettings({
+                      ...data,
+                      heroSlides: data.heroSlides.map((s: any, idx: number) =>
+                        idx === i ? { ...s, mobileUrl: "" } : s
+                      ),
+                    });
+                  }}
+                />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-5 pt-1">
-                <Field label="Headline (optional overlay text)">
+              <div className="grid md:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+                <Field label="Headline (optional overlay title)">
                   <input
                     className={inputClass()}
                     value={slide.headline || ""}
@@ -379,7 +591,7 @@ export default function AdminHeroPage() {
                     placeholder="e.g. Precision Balls Manufacturing"
                   />
                 </Field>
-                <Field label="Subline (optional caption text)">
+                <Field label="Subline (optional caption / subtitle)">
                   <input
                     className={inputClass()}
                     value={slide.subline || ""}
@@ -396,14 +608,14 @@ export default function AdminHeroPage() {
       <div className="flex justify-end gap-3">
         <Link
           href="/admin"
-          className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-lg text-xs"
+          className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-medium rounded-lg text-xs transition"
         >
           Back to Dashboard
         </Link>
         <button
           type="submit"
           disabled={saving}
-          className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold rounded-lg text-xs shadow-md transition"
+          className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold rounded-lg text-xs shadow-md transition cursor-pointer"
         >
           {saving ? "Publishing..." : "Save & Publish Slides"}
         </button>

@@ -9,6 +9,15 @@ import AdminPageHeader, {
   useToast,
 } from "@/components/admin/AdminUI";
 
+function isVideo(url?: string): boolean {
+  if (!url) return false;
+  return (
+    /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url) ||
+    url.includes("/video/") ||
+    url.startsWith("data:video/")
+  );
+}
+
 export default function AdminSettingsPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -617,9 +626,9 @@ export default function AdminSettingsPage() {
       <AdminCard className="p-6 space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-slate-900">Homepage Hero Slides</h3>
+            <h3 className="font-semibold text-slate-900">Homepage Hero Slides (Video &amp; Photo)</h3>
             <p className="text-xs text-slate-500 mt-1">
-              Upload desktop (≥1800×900) and mobile (≥900×1200) images for each slide. Shown as layered composite on desktop and swipe carousel on mobile.
+              Upload or link Desktop (≥1800×900) &amp; Mobile (≥900×1200 or 9:16) video (MP4, WebM) or photo (JPG, PNG, WebP) banners.
             </p>
           </div>
           <div className="flex gap-2">
@@ -676,93 +685,174 @@ export default function AdminSettingsPage() {
 
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
-                  <Field label="Desktop Image (1800×900 recommended)">
-                    <div className={`border-2 border-dashed border-slate-300 rounded-lg p-4 text-center ${slide.desktopUrl ? "bg-white" : "bg-slate-50"}`}>
-                      {slide.desktopUrl ? (
-                        <div className="space-y-3">
-                          <div className="relative aspect-[16/9] rounded-md overflow-hidden border border-slate-200">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-slate-700">Desktop Banner (Video / Photo)</span>
+                    {slide.desktopUrl && (
+                      <span className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        isVideo(slide.desktopUrl)
+                          ? "bg-purple-100 text-purple-700 border border-purple-200"
+                          : "bg-blue-100 text-blue-700 border border-blue-200"
+                      }`}>
+                        {isVideo(slide.desktopUrl) ? "🎬 Video" : "🖼️ Photo"}
+                      </span>
+                    )}
+                  </div>
+                  <div className={`border-2 border-dashed border-slate-300 rounded-lg p-4 text-center ${slide.desktopUrl ? "bg-white" : "bg-slate-50"}`}>
+                    {slide.desktopUrl ? (
+                      <div className="space-y-3">
+                        <div className="relative aspect-[16/9] rounded-md overflow-hidden border border-slate-200 bg-slate-900">
+                          {isVideo(slide.desktopUrl) ? (
+                            <video src={slide.desktopUrl} controls muted playsInline loop className="w-full h-full object-cover" />
+                          ) : (
                             <img src={slide.desktopUrl} alt={`Desktop ${i + 1}`} className="w-full h-full object-cover" />
-                          </div>
-                          <div className="flex gap-2 justify-center">
-                            <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
-                              Replace
-                              <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "desktopUrl")}
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => heroSlideSet(i, "desktopUrl", "")}
-                              className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
-                            >
-                              Remove
-                            </button>
-                          </div>
+                          )}
                         </div>
-                      ) : (
-                        <label className="block cursor-pointer py-8">
-                          <div className="text-3xl opacity-30 mb-2">🖼️</div>
-                          <div className="text-sm text-slate-600 mb-1">Upload desktop background</div>
-                          <div className="text-xs text-slate-400">JPG / PNG / WebP · ≥1800×900px</div>
+                        <div className="flex gap-2 justify-center">
+                          <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
+                            Upload File
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*,video/*"
+                              onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "desktopUrl")}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => heroSlideSet(i, "desktopUrl", "")}
+                            className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className="pt-1">
+                          <input
+                            type="url"
+                            className={inputClass()}
+                            value={slide.desktopUrl}
+                            onChange={(e) => heroSlideSet(i, "desktopUrl", e.target.value)}
+                            placeholder="Direct URL (https://...)"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 py-4">
+                        <label className="block cursor-pointer">
+                          <div className="text-3xl opacity-40 mb-1">🎬 / 🖼️</div>
+                          <div className="text-sm font-medium text-slate-700">Upload Desktop Video or Photo</div>
+                          <div className="text-xs text-slate-400">MP4, WebM, MOV or JPG, PNG · ≥1800×900px</div>
                           <input
                             type="file"
                             className="hidden"
-                            accept="image/*"
+                            accept="image/*,video/*"
                             onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "desktopUrl")}
                           />
                         </label>
-                      )}
-                    </div>
-                  </Field>
+                        <div className="pt-2 border-t border-slate-200">
+                          <input
+                            type="url"
+                            className={inputClass()}
+                            placeholder="Or paste direct Video/Photo URL"
+                            onBlur={(e) => e.target.value.trim() && heroSlideSet(i, "desktopUrl", e.target.value.trim())}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                const val = (e.target as HTMLInputElement).value.trim();
+                                if (val) heroSlideSet(i, "desktopUrl", val);
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
-                  <Field label="Mobile Image (900×1200 recommended)">
-                    <div className={`border-2 border-dashed border-slate-300 rounded-lg p-4 text-center ${slide.mobileUrl ? "bg-white" : "bg-slate-50"}`}>
-                      {slide.mobileUrl ? (
-                        <div className="space-y-3">
-                          <div className="relative aspect-[3/4] max-w-[180px] mx-auto rounded-md overflow-hidden border border-slate-200">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-slate-700">Mobile Banner (Video / Photo)</span>
+                    {slide.mobileUrl && (
+                      <span className={`text-[0.65rem] font-bold px-2 py-0.5 rounded-full uppercase ${
+                        isVideo(slide.mobileUrl)
+                          ? "bg-purple-100 text-purple-700 border border-purple-200"
+                          : "bg-blue-100 text-blue-700 border border-blue-200"
+                      }`}>
+                        {isVideo(slide.mobileUrl) ? "🎬 Video" : "🖼️ Photo"}
+                      </span>
+                    )}
+                  </div>
+                  <div className={`border-2 border-dashed border-slate-300 rounded-lg p-4 text-center ${slide.mobileUrl ? "bg-white" : "bg-slate-50"}`}>
+                    {slide.mobileUrl ? (
+                      <div className="space-y-3">
+                        <div className="relative aspect-[3/4] max-w-[180px] mx-auto rounded-md overflow-hidden border border-slate-200 bg-slate-900">
+                          {isVideo(slide.mobileUrl) ? (
+                            <video src={slide.mobileUrl} controls muted playsInline loop className="w-full h-full object-cover" />
+                          ) : (
                             <img src={slide.mobileUrl} alt={`Mobile ${i + 1}`} className="w-full h-full object-cover" />
-                          </div>
-                          <div className="flex gap-2 justify-center">
-                            <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
-                              Replace
-                              <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "mobileUrl")}
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => heroSlideSet(i, "mobileUrl", "")}
-                              className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
-                            >
-                              Remove
-                            </button>
-                          </div>
+                          )}
                         </div>
-                      ) : (
-                        <label className="block cursor-pointer py-8">
-                          <div className="text-3xl opacity-30 mb-2">📱</div>
-                          <div className="text-sm text-slate-600 mb-1">Upload mobile background</div>
-                          <div className="text-xs text-slate-400">Portrait · JPG / PNG · ≥900×1200px</div>
+                        <div className="flex gap-2 justify-center">
+                          <label className="text-xs px-3 py-1.5 bg-slate-700 text-white rounded cursor-pointer hover:bg-slate-800">
+                            Upload File
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*,video/*"
+                              onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "mobileUrl")}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => heroSlideSet(i, "mobileUrl", "")}
+                            className="text-xs px-3 py-1.5 border border-slate-300 rounded text-slate-600 hover:bg-slate-100"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className="pt-1">
+                          <input
+                            type="url"
+                            className={inputClass()}
+                            value={slide.mobileUrl}
+                            onChange={(e) => heroSlideSet(i, "mobileUrl", e.target.value)}
+                            placeholder="Direct URL (https://...)"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 py-4">
+                        <label className="block cursor-pointer">
+                          <div className="text-3xl opacity-40 mb-1">📱 / 🎬</div>
+                          <div className="text-sm font-medium text-slate-700">Upload Mobile Video or Photo</div>
+                          <div className="text-xs text-slate-400">Portrait · MP4, WebM or JPG, PNG · ≥900×1200px</div>
                           <input
                             type="file"
                             className="hidden"
-                            accept="image/*"
+                            accept="image/*,video/*"
                             onChange={(e) => e.target.files?.[0] && uploadHeroImage(e.target.files[0], i, "mobileUrl")}
                           />
                         </label>
-                      )}
-                    </div>
-                  </Field>
+                        <div className="pt-2 border-t border-slate-200">
+                          <input
+                            type="url"
+                            className={inputClass()}
+                            placeholder="Or paste direct Video/Photo URL"
+                            onBlur={(e) => e.target.value.trim() && heroSlideSet(i, "mobileUrl", e.target.value.trim())}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                const val = (e.target as HTMLInputElement).value.trim();
+                                if (val) heroSlideSet(i, "mobileUrl", val);
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+
 
               <div className="grid md:grid-cols-2 gap-5 pt-1">
                 <Field label="Headline (optional)">
