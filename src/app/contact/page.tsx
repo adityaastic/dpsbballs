@@ -4,15 +4,31 @@ import ContactForm from "@/components/ContactForm";
 import PageHero from "@/components/PageHero";
 import { getPageContent, getSiteData } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "Contact Us",
-};
+function isVideo(url?: string): boolean {
+  if (!url) return false;
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getPageContent("contact");
+  return {
+    title: pageData?.title || "Contact Us & Quotation Enquiry",
+    description:
+      pageData?.heroDescription ||
+      "Get in touch with DSP Precision Products sales team for quotations, drawings review and technical consultations.",
+  };
+}
 
 export default async function ContactPage() {
   const [pageData, { site }] = await Promise.all([
     getPageContent("contact"),
     getSiteData(),
   ]);
+
+  const officeMediaUrl =
+    (pageData?.sections?.[0]?.videoUrl as string) ||
+    (pageData?.sections?.[0]?.imageUrl as string) ||
+    "";
 
   return (
     <>
@@ -28,7 +44,7 @@ export default async function ContactPage() {
       <section className="section">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 lg:grid-cols-[0.9fr_1.1fr] lg:px-6">
           <div className="space-y-6">
-            <div className="border border-[var(--line)] bg-white p-6">
+            <div className="border border-[var(--line)] bg-white p-6 rounded-xl">
               <p className="eyebrow" style={{ color: "var(--copper)" }}>
                 {site.workOffice.label}
               </p>
@@ -49,7 +65,7 @@ export default async function ContactPage() {
               </div>
             </div>
 
-            <div className="border border-[var(--line)] bg-white p-6">
+            <div className="border border-[var(--line)] bg-white p-6 rounded-xl">
               <p className="eyebrow" style={{ color: "var(--copper)" }}>
                 {site.regdOffice.label}
               </p>
@@ -72,11 +88,33 @@ export default async function ContactPage() {
               </div>
             </div>
 
-            <ComingSoon
-              label="Map / office photo coming soon"
-              aspect="wide"
-              className="border border-[var(--line)]"
-            />
+            {officeMediaUrl ? (
+              isVideo(officeMediaUrl) ? (
+                <video
+                  src={officeMediaUrl}
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="rounded-xl border border-[var(--line)] w-full aspect-video object-cover"
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={officeMediaUrl}
+                  alt="DSP Office Facility"
+                  className="rounded-xl border border-[var(--line)] w-full aspect-video object-cover"
+                />
+              )
+            ) : (
+              <ComingSoon
+                label="Map / office photo coming soon"
+                aspect="wide"
+                className="border border-[var(--line)]"
+              />
+            )}
           </div>
 
           <div>

@@ -4,16 +4,31 @@ import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
 import { getPageContent, getProducts, getSiteData } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "About Us",
-};
+function isVideo(url?: string): boolean {
+  if (!url) return false;
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getPageContent("about");
+  return {
+    title: pageData?.title || "About Us",
+    description:
+      pageData?.heroDescription ||
+      "Learn about DSP Precision Products Pvt. Ltd. — 25+ years of precision ball manufacturing and export from Baddi, Himachal Pradesh, India.",
+  };
+}
 
 export default async function AboutPage() {
-  const [pageData, products, { site }] = await Promise.all([
+  const [pageData, products] = await Promise.all([
     getPageContent("about"),
     getProducts(),
-    getSiteData(),
   ]);
+
+  const storyMediaUrl =
+    (pageData?.sections?.[0]?.videoUrl as string) ||
+    (pageData?.sections?.[0]?.imageUrl as string) ||
+    "";
 
   const storyBody = (typeof pageData?.sections?.[0]?.body === "string" ? pageData.sections[0].body : "") || `
 DSP is one of the leading manufacturers of precision grade balls from high carbon steel & chrome steel, stainless steels, brass, copper, silver, tungsten carbide, ceramics and other materials against specific demand (glass, plastic, nitride and more).
@@ -51,13 +66,26 @@ The company is certified for ISO 9001 and is situated in the foothills of the Hi
               ))}
             </div>
           </div>
-          {pageData?.sections?.[0]?.imageUrl ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={pageData.sections[0].imageUrl as string}
-              alt="DSP Precision Leadership & Manufacturing Facility"
-              className="rounded-2xl border border-[var(--line)] shadow-md w-full aspect-portrait object-cover"
-            />
+          {storyMediaUrl ? (
+            isVideo(storyMediaUrl) ? (
+              <video
+                src={storyMediaUrl}
+                controls
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                className="rounded-2xl border border-[var(--line)] shadow-md w-full aspect-portrait object-cover"
+              />
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={storyMediaUrl}
+                alt="DSP Precision Leadership & Manufacturing Facility"
+                className="rounded-2xl border border-[var(--line)] shadow-md w-full aspect-portrait object-cover"
+              />
+            )
           ) : (
             <ComingSoon
               label="Leadership / plant image coming soon"

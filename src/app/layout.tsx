@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed } from "next/font/google";
+import Script from "next/script";
 import Footer from "@/components/Footer";
 import FloatingCTA from "@/components/FloatingCTA";
 import Header from "@/components/Header";
@@ -29,6 +30,18 @@ type SiteData = {
   highlights: SiteHighlight[];
 };
 
+type SeoData = {
+  title: string;
+  description: string;
+  keywords: string;
+  ogImageUrl: string;
+  googleVerification: string;
+  bingVerification: string;
+  googleAnalyticsId: string;
+  canonicalUrl: string;
+  robotsDirective: string;
+};
+
 const barlow = Barlow({
   variable: "--font-body",
   subsets: ["latin"],
@@ -45,9 +58,10 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.dspballs.co.in
 
 export async function generateMetadata(): Promise<Metadata> {
   const { seo, site } = (await getSiteData()) as {
-    seo: { title: string; description: string };
+    seo: SeoData;
     site: SiteData;
   };
+
   const title =
     seo.title ||
     "DSP Precision Products Pvt. Ltd. | Precision Balls Manufacturer & Exporter India";
@@ -55,39 +69,79 @@ export async function generateMetadata(): Promise<Metadata> {
     seo.description ||
     "DSP Precision Products Pvt. Ltd. — Leading manufacturer & exporter of AFBMA, DIN & ISO precision steel, stainless steel, carbide, ceramic, brass, copper and gauge balls from Baddi, Himachal Pradesh, India.";
 
-  const icons: Record<string, string> = {};
-  if (site.faviconUrl) {
-    icons.icon = site.faviconUrl;
-    icons.shortcut = site.faviconUrl;
-    icons.apple = site.faviconUrl;
-  }
+  const faviconUrl = site.faviconUrl || "/favicon.ico";
 
-  const ogImage = site.logoUrl || `${siteUrl}/images/certifications/gsci-cert.jpg`;
+  const icons = {
+    icon: [
+      { url: faviconUrl },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: [faviconUrl],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "192x192",
+        url: "/android-chrome-192x192.png",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "512x512",
+        url: "/android-chrome-512x512.png",
+      },
+    ],
+  };
+
+  const ogImage =
+    seo.ogImageUrl ||
+    site.logoUrl ||
+    `${siteUrl}/images/certifications/gsci-cert.jpg`;
+
+  const defaultKeywords = [
+    "precision balls manufacturer",
+    "steel balls Baddi",
+    "stainless steel balls manufacturer India",
+    "tungsten carbide balls",
+    "ceramic balls manufacturer",
+    "brass balls",
+    "copper balls",
+    "gauge balls",
+    "AFBMA balls",
+    "DIN ISO precision balls",
+    "DSP Precision Products",
+    "Baddi Industrial Area manufacturer",
+  ];
+
+  const keywords = seo.keywords
+    ? seo.keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+    : defaultKeywords;
 
   return {
     metadataBase: new URL(siteUrl),
+    manifest: "/site.webmanifest",
     alternates: {
-      canonical: "./",
+      canonical: seo.canonicalUrl || "./",
     },
     title: {
       default: title,
       template: `%s | ${site.shortName || "DSP"} Precision Products Pvt. Ltd.`,
     },
     description,
-    keywords: [
-      "precision balls manufacturer",
-      "steel balls Baddi",
-      "stainless steel balls manufacturer India",
-      "tungsten carbide balls",
-      "ceramic balls manufacturer",
-      "brass balls",
-      "copper balls",
-      "gauge balls",
-      "AFBMA balls",
-      "DIN ISO precision balls",
-      "DSP Precision Products",
-      "Baddi Industrial Area manufacturer",
-    ],
+    keywords,
+    verification: {
+      google: seo.googleVerification || undefined,
+      other: seo.bingVerification
+        ? { "msvalidate.01": seo.bingVerification }
+        : undefined,
+    },
     authors: [{ name: "DSP Precision Products Pvt. Ltd.", url: siteUrl }],
     creator: "DSP Precision Products Pvt. Ltd.",
     publisher: "DSP Precision Products Pvt. Ltd.",
@@ -120,11 +174,11 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [ogImage],
     },
     robots: {
-      index: true,
-      follow: true,
+      index: !seo.robotsDirective?.includes("noindex"),
+      follow: !seo.robotsDirective?.includes("nofollow"),
       googleBot: {
-        index: true,
-        follow: true,
+        index: !seo.robotsDirective?.includes("noindex"),
+        follow: !seo.robotsDirective?.includes("nofollow"),
         "max-video-preview": -1,
         "max-image-preview": "large",
         "max-snippet": -1,
@@ -138,13 +192,38 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [{ site, navLinks }, products] = (await Promise.all([
+  const [{ site, navLinks, seo }, products] = (await Promise.all([
     getSiteData(),
     getProducts(),
-  ])) as [{ site: SiteData; navLinks: NavLink[]; heroSlides: unknown[]; seo: unknown }, StaticProduct[]];
+  ])) as [
+    { site: SiteData; navLinks: NavLink[]; heroSlides: unknown[]; seo: SeoData },
+    StaticProduct[],
+  ];
 
   return (
     <html lang="en" className={`${barlow.variable} ${barlowCondensed.variable} h-full`}>
+      <head>
+        {seo.googleAnalyticsId && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${seo.googleAnalyticsId}`}
+            />
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${seo.googleAnalyticsId}');
+                `,
+              }}
+            />
+          </>
+        )}
+      </head>
       <body className="min-h-full flex flex-col antialiased">
         <SeoSchema site={site} />
         <Header navLinks={navLinks} site={site} />

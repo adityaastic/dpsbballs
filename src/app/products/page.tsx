@@ -3,9 +3,13 @@ import PageHero from "@/components/PageHero";
 import ProductCard from "@/components/ProductCard";
 import { getProducts } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "Products",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Precision Balls Product Catalogue",
+    description:
+      "Explore DSP Precision Products full catalogue: chrome steel, stainless steel, tungsten carbide, ceramic, brass, copper, gauge and modified balls manufactured to AFBMA, DIN & ISO standards.",
+  };
+}
 
 export default async function ProductsPage() {
   const products = await getProducts();

@@ -4,9 +4,15 @@ import PageHero from "@/components/PageHero";
 import CertificationBadges from "@/components/CertificationBadges";
 import { getPageContent, getSiteData } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "Quality",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getPageContent("quality");
+  return {
+    title: pageData?.title || "Quality Standards & Certifications",
+    description:
+      pageData?.heroDescription ||
+      "DSP Precision Products quality standards, ISO 9001 certification, AFBMA & DIN grading, tolerances and packing standards.",
+  };
+}
 
 const gradeRows = [
   ["3", "±5", "0.13", "0.500", "0.2", "0.1", "0.08", "0.080", "0.012"],

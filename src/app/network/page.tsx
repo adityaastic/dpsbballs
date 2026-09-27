@@ -3,9 +3,15 @@ import PageHero from "@/components/PageHero";
 import NetworkMaps from "@/components/NetworkMaps";
 import { getPageContent } from "@/lib/cms";
 
-export const metadata: Metadata = {
-  title: "Network & Locations",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getPageContent("network");
+  return {
+    title: pageData?.title || "Network & Locations",
+    description:
+      pageData?.heroDescription ||
+      "Manufacturing at Baddi Plant with Registered Office in Delhi — supplying precision grade balls to domestic and global buyers.",
+  };
+}
 
 export default async function NetworkPage() {
   const pageData = await getPageContent("network");
@@ -33,11 +39,12 @@ export default async function NetworkPage() {
       <section className="section pt-0">
         <div className="mx-auto max-w-6xl px-4 md:px-6">
           <div className="border border-[var(--line)] bg-[var(--surface)] p-8 md:p-10 rounded-2xl shadow-sm">
-            <h2 className="section-title">Export &amp; Worldwide Supply Chain</h2>
+            <h2 className="section-title">
+              {(pageData?.sections?.[0]?.heading as string) || "Export & Worldwide Supply Chain"}
+            </h2>
             <p className="section-copy">
-              DSP supplies precision balls to reputed OEM and distributor customers across India and
-              international markets. Share your destination, AFBMA/DIN/ISO standards and
-              custom packing preferences with our sales team for rapid export support.
+              {(pageData?.sections?.[0]?.body as string) ||
+                "DSP supplies precision balls to reputed OEM and distributor customers across India and international markets. Share your destination, AFBMA/DIN/ISO standards and custom packing preferences with our sales team for rapid export support."}
             </p>
           </div>
         </div>

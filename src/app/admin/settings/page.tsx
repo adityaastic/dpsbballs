@@ -79,7 +79,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const uploadLogo = async (file: File, field: "logoUrl" | "logoDarkUrl" | "faviconUrl") => {
+  const uploadLogo = async (file: File, field: "logoUrl" | "logoDarkUrl" | "faviconUrl" | "ogImageUrl") => {
     try {
       const form = new FormData();
       form.append("files", file);
@@ -787,21 +787,167 @@ export default function AdminSettingsPage() {
         </div>
       </AdminCard>
 
-      <AdminCard className="p-6 space-y-5">
-        <h3 className="font-semibold text-slate-900">SEO Defaults</h3>
-        <Field label="Default meta title">
-          <input
-            className={inputClass()}
-            value={data.seoTitle || ""}
-            onChange={(e) => update("seoTitle", e.target.value)}
-          />
-        </Field>
-        <Field label="Default meta description">
+      <AdminCard className="p-6 space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <h3 className="font-semibold text-slate-900 text-lg flex items-center gap-2">
+              <span>🔍</span> Complete SEO & Webmaster Suite
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              Configure search engine indexing, Google verification, Google Analytics, social share cards and meta tags.
+            </p>
+          </div>
+          <span className="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2.5 py-1 rounded-full border border-emerald-200">
+            SEO Active
+          </span>
+        </div>
+
+        {/* GOOGLE PREVIEW */}
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+            Google Search Result Preview
+          </p>
+          <div className="bg-white p-4 rounded border border-slate-200 shadow-xs max-w-xl">
+            <div className="text-xs text-slate-600 truncate flex items-center gap-1.5 mb-1">
+              <span className="w-4 h-4 rounded-full bg-slate-200 inline-flex items-center justify-center text-[10px]">🌐</span>
+              <span>{data.canonicalUrl || "https://www.dspballs.co.in"}</span>
+            </div>
+            <div className="text-base text-blue-700 font-medium hover:underline cursor-pointer truncate">
+              {data.seoTitle || "DSP Precision Products Pvt. Ltd. | Precision Balls Manufacturer India"}
+            </div>
+            <div className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+              {data.seoDescription || "DSP Precision Products Pvt. Ltd. — Leading manufacturer & exporter of AFBMA, DIN & ISO precision steel, stainless steel, carbide, ceramic, brass, copper and gauge balls."}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          <Field label="Meta Title (recommended 50-60 characters)">
+            <input
+              className={inputClass()}
+              value={data.seoTitle || ""}
+              onChange={(e) => update("seoTitle", e.target.value)}
+              placeholder="Company Name | Primary Keyword & Value Proposition"
+            />
+            <span className="text-[11px] text-slate-400">
+              Length: {(data.seoTitle || "").length} characters
+            </span>
+          </Field>
+
+          <Field label="Canonical Website URL">
+            <input
+              className={inputClass()}
+              value={data.canonicalUrl || ""}
+              onChange={(e) => update("canonicalUrl", e.target.value)}
+              placeholder="https://www.dspballs.co.in"
+            />
+          </Field>
+        </div>
+
+        <Field label="Meta Description (recommended 150-160 characters)">
           <textarea
-            className={`${inputClass()} min-h-[80px]`}
+            className={`${inputClass()} min-h-[85px]`}
             value={data.seoDescription || ""}
             onChange={(e) => update("seoDescription", e.target.value)}
+            placeholder="Comprehensive description of products, certifications, quality and exports..."
           />
+          <span className="text-[11px] text-slate-400">
+            Length: {(data.seoDescription || "").length} characters
+          </span>
+        </Field>
+
+        <Field label="Meta Keywords (comma-separated)">
+          <input
+            className={inputClass()}
+            value={data.seoKeywords || ""}
+            onChange={(e) => update("seoKeywords", e.target.value)}
+            placeholder="precision balls, steel balls manufacturer, stainless steel balls, tungsten carbide balls, Baddi"
+          />
+        </Field>
+
+        {/* SOCIAL SHARE / OG IMAGE */}
+        <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-3">
+          <h4 className="font-semibold text-slate-800 text-sm">
+            Social Share Image (Open Graph / WhatsApp / LinkedIn Preview)
+          </h4>
+          <div className="flex flex-wrap items-center gap-4">
+            {data.ogImageUrl ? (
+              <img
+                src={data.ogImageUrl}
+                alt="OG Preview"
+                className="w-32 h-20 object-cover rounded border border-slate-200 bg-white"
+              />
+            ) : (
+              <div className="w-32 h-20 rounded border border-dashed border-slate-300 bg-white flex items-center justify-center text-xs text-slate-400">
+                No OG Image
+              </div>
+            )}
+            <div className="space-y-2 flex-1">
+              <input
+                className={`${inputClass()} text-xs font-mono`}
+                value={data.ogImageUrl || ""}
+                onChange={(e) => update("ogImageUrl", e.target.value)}
+                placeholder="https://... image URL"
+              />
+              <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded text-xs font-medium cursor-pointer">
+                <span>📁 Upload New OG Image</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "ogImageUrl")}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* SEARCH CONSOLE & ANALYTICS VERIFICATIONS */}
+        <div className="border-t border-slate-100 pt-5 space-y-4">
+          <h4 className="font-semibold text-slate-800 text-sm">
+            Webmaster Verification & Analytics
+          </h4>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Field label="Google Site Verification (Search Console)">
+              <input
+                className={inputClass()}
+                value={data.googleVerification || ""}
+                onChange={(e) => update("googleVerification", e.target.value)}
+                placeholder="google-site-verification token or code"
+              />
+            </Field>
+
+            <Field label="Bing Webmaster Verification">
+              <input
+                className={inputClass()}
+                value={data.bingVerification || ""}
+                onChange={(e) => update("bingVerification", e.target.value)}
+                placeholder="msvalidate.01 token"
+              />
+            </Field>
+
+            <Field label="Google Analytics / GTM ID">
+              <input
+                className={inputClass()}
+                value={data.googleAnalyticsId || ""}
+                onChange={(e) => update("googleAnalyticsId", e.target.value)}
+                placeholder="G-XXXXXXXXXX or GTM-XXXXXX"
+              />
+            </Field>
+          </div>
+        </div>
+
+        {/* ROBOTS DIRECTIVE */}
+        <Field label="Search Engine Robots Directive">
+          <select
+            className={inputClass()}
+            value={data.robotsDirective || "index, follow"}
+            onChange={(e) => update("robotsDirective", e.target.value)}
+          >
+            <option value="index, follow">Index & Follow (Standard - All search engines index site)</option>
+            <option value="noindex, nofollow">Noindex, Nofollow (Hide site from search engines)</option>
+            <option value="noindex, follow">Noindex, Follow (Don't index, follow links)</option>
+          </select>
         </Field>
       </AdminCard>
 

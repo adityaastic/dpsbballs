@@ -162,57 +162,75 @@ export async function getSiteData() {
       const { data, error } = await supabase
         .from("site_settings")
         .select("*")
-        .eq("key", "main")
-        .maybeSingle();
+        .in("key", ["main", "seo"]);
 
-      if (error || !data) {
+      if (error || !data || data.length === 0) {
         return {
           site: staticSite,
           navLinks: staticNav,
           heroSlides: staticHeroSlides,
-          seo: { title: "", description: "" },
+          seo: {
+            title: "",
+            description: "",
+            keywords: "",
+            ogImageUrl: "",
+            googleVerification: "",
+            bingVerification: "",
+            googleAnalyticsId: "",
+            canonicalUrl: "",
+            robotsDirective: "index, follow",
+          },
         };
       }
 
-      const s = data as DbSiteSettingRow;
+      const mainRow = (data.find((r) => r.key === "main") || {}) as DbSiteSettingRow;
+      const seoRow = (data.find((r) => r.key === "seo") || {}) as DbSiteSettingRow;
+
       const site = {
-        name: s.name || staticSite.name,
-        shortName: s.short_name || staticSite.shortName,
-        tagline: s.tagline || staticSite.tagline,
-        logoUrl: s.logo_url || "",
-        logoDarkUrl: s.logo_dark_url || "",
-        faviconUrl: s.favicon_url || "",
-        email: s.email || staticSite.email,
-        phoneWork: s.phone_work || staticSite.phoneWork,
-        phoneRegd: s.phone_regd || staticSite.phoneRegd,
-        phoneFax: s.phone_fax || staticSite.phoneFax,
-        mobile: s.mobile || staticSite.mobile,
-        whatsapp: s.whatsapp || staticSite.whatsapp || "",
-        workOffice: s.work_office || staticSite.workOffice,
-        regdOffice: s.regd_office || staticSite.regdOffice,
+        name: mainRow.name || staticSite.name,
+        shortName: mainRow.short_name || staticSite.shortName,
+        tagline: mainRow.tagline || staticSite.tagline,
+        logoUrl: mainRow.logo_url || "",
+        logoDarkUrl: mainRow.logo_dark_url || "",
+        faviconUrl: mainRow.favicon_url || "",
+        email: mainRow.email || staticSite.email,
+        phoneWork: mainRow.phone_work || staticSite.phoneWork,
+        phoneRegd: mainRow.phone_regd || staticSite.phoneRegd,
+        phoneFax: mainRow.phone_fax || staticSite.phoneFax,
+        mobile: mainRow.mobile || staticSite.mobile,
+        whatsapp: mainRow.whatsapp || staticSite.whatsapp || "",
+        workOffice: mainRow.work_office || staticSite.workOffice,
+        regdOffice: mainRow.regd_office || staticSite.regdOffice,
         highlights:
-          s.highlights && s.highlights.length > 0
-            ? s.highlights
+          mainRow.highlights && mainRow.highlights.length > 0
+            ? mainRow.highlights
             : staticSite.highlights,
       };
 
       const navLinks =
-        s.nav_links && s.nav_links.length > 0
-          ? [...s.nav_links].sort(
+        mainRow.nav_links && mainRow.nav_links.length > 0
+          ? [...mainRow.nav_links].sort(
               (a: NavItem, b: NavItem) => (a.order || 0) - (b.order || 0)
             )
           : staticNav;
 
       const heroSlides =
-        s.hero_slides && s.hero_slides.length > 0
-          ? [...s.hero_slides].sort(
+        mainRow.hero_slides && mainRow.hero_slides.length > 0
+          ? [...mainRow.hero_slides].sort(
               (a: HeroSlide, b: HeroSlide) => (a.order || 0) - (b.order || 0)
             )
           : staticHeroSlides;
 
       const seo = {
-        title: s.seo_title || "",
-        description: s.seo_description || "",
+        title: seoRow.seo_title || mainRow.seo_title || "",
+        description: seoRow.seo_description || mainRow.seo_description || "",
+        keywords: seoRow.tagline || "",
+        ogImageUrl: seoRow.logo_url || mainRow.logo_url || "",
+        googleVerification: seoRow.email || "",
+        bingVerification: seoRow.phone_work || "",
+        googleAnalyticsId: seoRow.phone_regd || "",
+        canonicalUrl: seoRow.phone_fax || "",
+        robotsDirective: seoRow.whatsapp || "index, follow",
       };
 
       return { site, navLinks, heroSlides, seo };
@@ -221,8 +239,19 @@ export async function getSiteData() {
       site: staticSite,
       navLinks: staticNav,
       heroSlides: staticHeroSlides,
-      seo: { title: "", description: "" },
+      seo: {
+        title: "",
+        description: "",
+        keywords: "",
+        ogImageUrl: "",
+        googleVerification: "",
+        bingVerification: "",
+        googleAnalyticsId: "",
+        canonicalUrl: "",
+        robotsDirective: "index, follow",
+      },
     }
+
   );
 }
 

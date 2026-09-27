@@ -9,9 +9,13 @@ import PageHero from "@/components/PageHero";
 import { getTechnical } from "@/lib/cms";
 import type { ManufacturingStep, MaterialRow } from "@/data/technical";
 
-export const metadata: Metadata = {
-  title: "Technical Helpdesk",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Technical Helpdesk & Material Comparison",
+    description:
+      "Material comparison, manufacturing process overview, and enquiry forms for new or experienced ball buyers.",
+  };
+}
 
 type TechData = {
   materialComparison: { intro: string; rows: MaterialRow[] };

@@ -4,9 +4,15 @@ import PageHero from "@/components/PageHero";
 import { getPageContent, getTechnical } from "@/lib/cms";
 import type { ClientTestimonial } from "@/data/technical";
 
-export const metadata: Metadata = {
-  title: "Client Appreciation",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const pageData = await getPageContent("clients");
+  return {
+    title: pageData?.title || "Client Appreciation",
+    description:
+      pageData?.heroDescription ||
+      "Feedback from customers who rely on DSP for consistent quality, on-time supply and dependable communication.",
+  };
+}
 
 export default async function ClientsPage() {
   const [pageData, tech] = await Promise.all([
@@ -30,10 +36,10 @@ export default async function ClientsPage() {
 
       <section className="section">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 md:px-6">
-          {(tech.clientTestimonials as ClientTestimonial[]).map((item: ClientTestimonial, i: number) => (
+          {(tech.clientTestimonials as (ClientTestimonial & { imageUrl?: string })[]).map((item, i: number) => (
             <article
               key={i}
-              className="grid gap-6 border border-[var(--line)] bg-white p-6 md:grid-cols-[1fr_0.7fr] md:p-8"
+              className="grid gap-6 border border-[var(--line)] bg-white p-6 md:grid-cols-[1fr_0.7fr] md:p-8 rounded-xl items-center"
             >
               <div>
                 <p className="eyebrow" style={{ color: "var(--copper)" }}>
@@ -50,11 +56,20 @@ export default async function ClientsPage() {
                   {item.detail}
                 </p>
               </div>
-              <ComingSoon
-                label="Client letter / photo coming soon"
-                aspect="square"
-                className="border border-[var(--line)]"
-              />
+              {item.imageUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={item.imageUrl}
+                  alt={`${item.author} appreciation`}
+                  className="rounded-lg border border-[var(--line)] w-full aspect-square object-cover"
+                />
+              ) : (
+                <ComingSoon
+                  label="Client letter / photo coming soon"
+                  aspect="square"
+                  className="border border-[var(--line)]"
+                />
+              )}
             </article>
           ))}
         </div>

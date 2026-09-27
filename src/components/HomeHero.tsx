@@ -3,13 +3,41 @@
 import { useEffect, useRef, useState } from "react";
 import type { HeroSlide } from "@/lib/cms";
 
+function isVideoUrl(url?: string): boolean {
+  if (!url) return false;
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+}
+
+function HeroMediaItem({ url, alt, className }: { url: string; alt: string; className: string }) {
+  if (isVideoUrl(url)) {
+    return (
+      <video
+        src={url}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        className={className}
+      />
+    );
+  }
+  return (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={url}
+      alt={alt}
+      className={className}
+    />
+  );
+}
+
 function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Normalize slides
   const defaultFallbackImage =
     "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80";
 
@@ -71,12 +99,12 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 
   return (
     <section className="home-hero">
-      {/* DESKTOP SINGLE IMAGE (NO SLIDER) */}
+      {/* DESKTOP SINGLE MEDIA (NO SLIDER) */}
       <div className="home-hero-media home-hero-media-desktop">
         {desktopUrl ? (
           <div className="hero-layer active">
-            <img
-              src={desktopUrl}
+            <HeroMediaItem
+              url={desktopUrl}
               alt="Desktop Hero Banner"
               className="w-full h-full object-contain md:object-fill"
             />
@@ -104,8 +132,8 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
             const url = s.mobileUrl || s.desktopUrl || defaultFallbackImage;
             return (
               <div key={`mob-${i}`} className="mobile-slide">
-                <img
-                  src={url}
+                <HeroMediaItem
+                  url={url}
                   alt={`Mobile banner ${i + 1}`}
                   className="w-full h-full object-contain"
                 />
