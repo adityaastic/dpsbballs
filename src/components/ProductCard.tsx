@@ -3,12 +3,18 @@ import type { Product } from "@/data/products";
 import ComingSoon from "./ComingSoon";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const hasImage = Boolean(
+    product.imageUrl &&
+    !product.imageUrl.startsWith("/images/products/") &&
+    !product.imageUrl.includes("hero-desktop")
+  );
+
   return (
     <Link
       href={`/products/${product.slug}`}
       className="product-card group block bg-white border border-[var(--line)] rounded-xl overflow-hidden shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] transition-all duration-300 hover:-translate-y-1"
     >
-      {product.imageUrl ? (
+      {hasImage ? (
         <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 border-b border-[var(--line)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

@@ -507,7 +507,7 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   overflow: hidden;
   color: #fff;
-  background: #0f0500;
+  background: #0b1626;
 }
 
 /* ── DESKTOP ── */
@@ -574,7 +574,7 @@ a { color: inherit; text-decoration: none; }
 .home-hero-media-mobile {
   position: absolute;
   inset: 0;
-  background: #180800;
+  background: #0b1626;
   overflow: hidden;
 }
 .mobile-track {

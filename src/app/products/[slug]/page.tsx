@@ -110,7 +110,9 @@ export default async function ProductDetailPage({ params }: Props) {
               Enquire now
             </Link>
           </div>
-          {product.imageUrl ? (
+          {product.imageUrl &&
+          !product.imageUrl.startsWith("/images/products/") &&
+          !product.imageUrl.includes("hero-desktop") ? (
             <div className="rounded overflow-hidden border border-white/10">
               {/* eslint-disable-next-line */}
               <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover aspect-[16/9]" />

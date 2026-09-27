@@ -106,7 +106,7 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
             <HeroMediaItem
               url={desktopUrl}
               alt="Desktop Hero Banner"
-              className="w-full h-full object-contain md:object-fill"
+              className="w-full h-full object-contain"
             />
           </div>
         ) : (

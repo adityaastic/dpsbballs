@@ -141,7 +141,10 @@ export async function getProducts(): Promise<StaticProductType[]> {
       title: p.title,
       short: p.short || "",
       description: p.description || "",
-      imageUrl: p.image_url || undefined,
+      imageUrl:
+        p.image_url && !p.image_url.startsWith("/images/products/")
+          ? p.image_url
+          : undefined,
       highlights: p.highlights || [],
       grades: p.grades || [],
       specs: p.specs || [],
