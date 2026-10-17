@@ -144,10 +144,10 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 
   return (
     <section className="home-hero">
-      {/* DESKTOP FULL-WIDTH BANNER (EDGE-TO-EDGE, ZERO SIDE PADDING) */}
-      <div className="home-hero-media home-hero-media-desktop relative overflow-hidden group w-full">
+      {/* DESKTOP FULL-SCREEN BANNER (FITS 100% ON FIRST VIEWPORT) */}
+      <div className="home-hero-media home-hero-media-desktop relative overflow-hidden group w-full h-[calc(100dvh-4.25rem)]">
         <div
-          className="flex w-full transition-transform duration-700 ease-out"
+          className="flex w-full h-full transition-transform duration-700 ease-out"
           style={{ transform: `translateX(-${activeDesktopIdx * 100}%)` }}
         >
           {effectiveDesktopSlides.map((slide, idx) => {
@@ -155,12 +155,12 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
             return (
               <div
                 key={`desk-${idx}`}
-                className="w-full shrink-0 flex-none"
+                className="w-full h-full shrink-0 flex-none"
               >
                 <HeroMediaItem
                   url={url}
                   alt={slide.headline || `DSP Precision Products Banner ${idx + 1}`}
-                  className="w-full h-auto block"
+                  className="w-full h-full object-fill block"
                 />
               </div>
             );
