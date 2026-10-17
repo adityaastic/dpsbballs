@@ -315,31 +315,28 @@ export default function AdminHeroPage() {
       if (!res.ok) throw new Error(json.error || "Upload failed");
       if (json.media && json.media.length > 0) {
         const uploadedUrl = json.media[0].url;
-        setData((d: any) => {
-          const heroSlides = Array.isArray(d?.heroSlides) ? [...d.heroSlides] : [];
-          while (heroSlides.length <= idx) {
-            heroSlides.push({
-              desktopUrl: "",
-              mobileUrl: "",
-              headline: "",
-              subline: "",
-              order: heroSlides.length,
-            });
-          }
-          heroSlides[idx] = {
+        const heroSlides = Array.isArray(data?.heroSlides) ? [...data.heroSlides] : [];
+        while (heroSlides.length <= idx) {
+          heroSlides.push({
             desktopUrl: "",
             mobileUrl: "",
             headline: "",
             subline: "",
-            order: idx,
-            ...heroSlides[idx],
-            [field]: uploadedUrl,
-          };
-          const nextData = { ...d, heroSlides };
-          persistSettings(nextData);
-          return nextData;
-        });
-        show("Media uploaded and published live!", "success");
+            order: heroSlides.length,
+          });
+        }
+        heroSlides[idx] = {
+          desktopUrl: "",
+          mobileUrl: "",
+          headline: "",
+          subline: "",
+          order: idx,
+          ...heroSlides[idx],
+          [field]: uploadedUrl,
+        };
+        const nextData = { ...data, heroSlides };
+        setData(nextData);
+        await persistSettings(nextData);
       }
     } catch (e: any) {
       show(e.message || "Upload failed", "error");

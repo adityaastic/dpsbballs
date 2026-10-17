@@ -28,6 +28,7 @@ function HeroMediaItem({
   onVideoEnded?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const retriedRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -36,13 +37,52 @@ function HeroMediaItem({
     video.defaultMuted = true;
     video.muted = true;
 
+    let cancelled = false;
+
+    const attemptPlay = () => {
+      if (cancelled || !video) return;
+      video.defaultMuted = true;
+      video.muted = true;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          if (cancelled) return;
+          // Wait until browser has buffered enough data, then play
+          const handleCanPlay = () => {
+            video.removeEventListener("canplay", handleCanPlay);
+            if (!cancelled && isActive) {
+              video.muted = true;
+              video.play().catch(() => {});
+            }
+          };
+          video.addEventListener("canplay", handleCanPlay);
+        });
+      }
+    };
+
     if (isActive) {
-      video.currentTime = 0;
-      video.play().catch(() => {});
+      retriedRef.current = false;
+      // If browser evicted decoder/network state while inactive, reload the stream
+      if (video.readyState === 0 || video.error) {
+        video.load();
+        attemptPlay();
+      } else {
+        if (video.currentTime > 0.2) {
+          try {
+            video.currentTime = 0;
+          } catch {
+            // ignore seek errors
+          }
+        }
+        attemptPlay();
+      }
     } else {
       video.pause();
-      video.currentTime = 0;
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [url, isActive]);
 
   if (isVideoUrl(url)) {
@@ -54,15 +94,25 @@ function HeroMediaItem({
         loop={shouldLoop}
         muted
         playsInline
-        preload="auto"
+        preload={isActive ? "auto" : "metadata"}
+        onCanPlay={() => {
+          const video = videoRef.current;
+          if (isActive && video && video.paused) {
+            video.muted = true;
+            video.play().catch(() => {});
+          }
+        }}
         onEnded={() => {
           if (!shouldLoop && isActive && onVideoEnded) {
             onVideoEnded();
           }
         }}
         onError={() => {
-          if (isActive && onVideoEnded) {
-            onVideoEnded();
+          const video = videoRef.current;
+          if (isActive && video && !retriedRef.current) {
+            retriedRef.current = true;
+            video.load();
+            video.play().catch(() => {});
           }
         }}
         className={className}
@@ -213,7 +263,7 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
             const url = slide.desktopUrl || defaultFallbackImage;
             return (
               <div
-                key={`desk-${idx}`}
+                key={`desk-${idx}-${url}`}
                 className="w-full h-full shrink-0 flex-none"
               >
                 <HeroMediaItem
@@ -238,7 +288,7 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
               type="button"
               aria-label="Previous slide"
               onClick={() => goToDesktop(activeDesktopIdx - 1)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-sm flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer shadow-lg"
             >
               ❮
             </button>
@@ -246,21 +296,21 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
               type="button"
               aria-label="Next slide"
               onClick={() => goToDesktop(activeDesktopIdx + 1)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-sm flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all duration-200 z-10 cursor-pointer shadow-lg"
             >
               ❯
             </button>
 
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10 bg-black/40 backdrop-blur-md px-3.5 py-2 rounded-full shadow-md">
               {effectiveDesktopSlides.map((_, i) => (
                 <button
                   key={`dot-desk-${i}`}
                   aria-label={`Go to slide ${i + 1}`}
                   onClick={() => goToDesktop(i)}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                     activeDesktopIdx === i
                       ? "w-8 bg-amber-500"
-                      : "w-2 bg-white/60 hover:bg-white"
+                      : "w-2.5 bg-white/70 hover:bg-white"
                   }`}
                 />
               ))}
@@ -286,7 +336,7 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
           {mobileSlides.map((s, i) => {
             const url = s.mobileUrl || s.desktopUrl || defaultFallbackImage;
             return (
-              <div key={`mob-${i}`} className="mobile-slide">
+              <div key={`mob-${i}-${url}`} className="mobile-slide">
                 <HeroMediaItem
                   url={url}
                   alt={`Mobile banner ${i + 1}`}
