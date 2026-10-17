@@ -1,3 +1,5 @@
+import { getTechnicalSeoConfig } from "@/lib/seoCms";
+
 type SeoSchemaProps = {
   site: {
     name: string;
@@ -11,21 +13,36 @@ type SeoSchemaProps = {
   };
 };
 
-export default function SeoSchema({ site }: SeoSchemaProps) {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.dspballs.co.in").replace(/\/$/, "");
+export default async function SeoSchema({ site }: SeoSchemaProps) {
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.dspballs.co.in"
+  ).replace(/\/$/, "");
   const logo = site.logoUrl || `${baseUrl}/images/certifications/gsci-cert.jpg`;
+
+  const techConfig = await getTechnicalSeoConfig();
+  const sc = techConfig.schemaConfig;
+
+  const orgName = sc?.organizationName || site.name;
+  const legalName = sc?.legalName || site.name;
+  const phone = sc?.customerServicePhone || site.phoneWork || site.mobile;
+  const email = sc?.customerServiceEmail || site.email;
 
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${baseUrl}/#organization`,
-    name: site.name,
+    name: orgName,
+    legalName,
     alternateName: site.shortName || "DSP Precision",
+    foundingDate: sc?.foundingYear || "1984",
     url: baseUrl,
-    logo: logo,
-    description: site.tagline || "Manufacturer & Exporter of Precision Balls & Allied Products",
-    email: site.email,
-    telephone: site.phoneWork || site.mobile,
+    logo,
+    description:
+      site.tagline ||
+      "Manufacturer & Exporter of Precision Balls & Allied Products",
+    email,
+    telephone: phone,
+    sameAs: Array.isArray(sc?.sameAsSocialUrls) ? sc.sameAsSocialUrls : [],
     address: [
       {
         "@type": "PostalAddress",
@@ -46,36 +63,37 @@ export default function SeoSchema({ site }: SeoSchemaProps) {
     contactPoint: [
       {
         "@type": "ContactPoint",
-        telephone: site.phoneWork,
+        telephone: phone,
         contactType: "sales",
-        email: site.email,
+        email,
         availableLanguage: ["English", "Hindi"],
       },
       {
         "@type": "ContactPoint",
-        telephone: site.mobile,
+        telephone: site.mobile || phone,
         contactType: "customer support",
-        email: site.email,
+        email,
       },
     ],
-    hasCertification: [
-      {
-        "@type": "EducationalOccupationalCredential",
-        name: "ISO 9001:2015 Quality Management System",
-        credentialCategory: "ISO Certification",
-      },
-    ],
+    hasCertification: (sc?.isoCertifications?.length
+      ? sc.isoCertifications
+      : ["ISO 9001:2015 Quality Management System"]
+    ).map((cert) => ({
+      "@type": "EducationalOccupationalCredential",
+      name: cert,
+      credentialCategory: "ISO Certification",
+    })),
   };
 
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "ManufacturingBusiness",
     "@id": `${baseUrl}/#localbusiness`,
-    name: site.name,
+    name: orgName,
     image: logo,
     url: baseUrl,
-    telephone: site.phoneWork || site.mobile,
-    email: site.email,
+    telephone: phone,
+    email,
     address: {
       "@type": "PostalAddress",
       streetAddress: "18, Industrial Estate, Baddi",
@@ -92,7 +110,14 @@ export default function SeoSchema({ site }: SeoSchemaProps) {
     priceRange: "$$",
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      dayOfWeek: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ],
       opens: "09:00",
       closes: "18:00",
     },
@@ -103,7 +128,7 @@ export default function SeoSchema({ site }: SeoSchemaProps) {
     "@type": "WebSite",
     "@id": `${baseUrl}/#website`,
     url: baseUrl,
-    name: site.name,
+    name: orgName,
     description: site.tagline,
     publisher: {
       "@id": `${baseUrl}/#organization`,
@@ -118,7 +143,9 @@ export default function SeoSchema({ site }: SeoSchemaProps) {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(localBusinessSchema),
+        }}
       />
       <script
         type="application/ld+json"

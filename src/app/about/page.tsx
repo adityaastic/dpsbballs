@@ -3,6 +3,7 @@ import Link from "next/link";
 import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
 import { getPageContent, getProducts, getSiteData } from "@/lib/cms";
+import { resolveNextPageMetadata } from "@/lib/seoCms";
 
 function isVideo(url?: string): boolean {
   if (!url) return false;
@@ -11,12 +12,15 @@ function isVideo(url?: string): boolean {
 
 export async function generateMetadata(): Promise<Metadata> {
   const pageData = await getPageContent("about");
-  return {
-    title: pageData?.title || "About Us",
-    description:
+  return resolveNextPageMetadata({
+    entityType: "page",
+    entityId: "about",
+    urlPath: "/about",
+    fallbackTitle: pageData?.title || "About Us | Durga Steel & Precision Ball",
+    fallbackDescription:
       pageData?.heroDescription ||
       "Learn about DSP Precision Products Pvt. Ltd. — 25+ years of precision ball manufacturing and export from Baddi, Himachal Pradesh, India.",
-  };
+  });
 }
 
 export default async function AboutPage() {

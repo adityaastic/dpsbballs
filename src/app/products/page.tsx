@@ -2,13 +2,18 @@ import type { Metadata } from "next";
 import PageHero from "@/components/PageHero";
 import ProductCard from "@/components/ProductCard";
 import { getProducts } from "@/lib/cms";
+import { resolveNextPageMetadata } from "@/lib/seoCms";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: "Precision Balls Product Catalogue",
-    description:
+  return resolveNextPageMetadata({
+    entityType: "page",
+    entityId: "products",
+    urlPath: "/products",
+    fallbackTitle:
+      "Precision Balls Product Catalogue | Durga Steel & Precision Ball",
+    fallbackDescription:
       "Explore DSP Precision Products full catalogue: chrome steel, stainless steel, tungsten carbide, ceramic, brass, copper, gauge and modified balls manufactured to AFBMA, DIN & ISO standards.",
-  };
+  });
 }
 
 export default async function ProductsPage() {

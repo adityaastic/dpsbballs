@@ -3,15 +3,21 @@ import ComingSoon from "@/components/ComingSoon";
 import PageHero from "@/components/PageHero";
 import CertificationBadges from "@/components/CertificationBadges";
 import { getPageContent, getSiteData } from "@/lib/cms";
+import { resolveNextPageMetadata } from "@/lib/seoCms";
 
 export async function generateMetadata(): Promise<Metadata> {
   const pageData = await getPageContent("quality");
-  return {
-    title: pageData?.title || "Quality Standards & Certifications",
-    description:
+  return resolveNextPageMetadata({
+    entityType: "page",
+    entityId: "quality",
+    urlPath: "/quality",
+    fallbackTitle:
+      pageData?.title ||
+      "Quality Standards & Certifications | Durga Steel & Precision Ball",
+    fallbackDescription:
       pageData?.heroDescription ||
       "DSP Precision Products quality standards, ISO 9001 certification, AFBMA & DIN grading, tolerances and packing standards.",
-  };
+  });
 }
 
 const gradeRows = [
