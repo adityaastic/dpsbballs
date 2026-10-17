@@ -27,8 +27,9 @@ function IconArrow() {
 
 function buildGroups(links: NavLink[]): { standalone: NavLink[]; groups: DropdownGroup[] } {
   const find = (label: string) => links.find(l => l.label === label);
+  const blogLink: NavLink = find("Blog") || { href: "/blog", label: "Engineering Blog" };
   const companyItems: NavLink[] = [find("About"), find("Clients"), find("Career")].filter(Boolean) as NavLink[];
-  const excelItems: NavLink[]   = [find("Quality"), find("Helpdesk")].filter(Boolean) as NavLink[];
+  const excelItems: NavLink[]   = [find("Quality"), find("Helpdesk"), blogLink].filter(Boolean) as NavLink[];
   const reachItems: NavLink[]   = [find("Network")].filter(Boolean) as NavLink[];
   const standalone: NavLink[]   = [find("Home"), find("Products"), find("Contact")].filter(Boolean) as NavLink[];
 

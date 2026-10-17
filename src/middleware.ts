@@ -15,10 +15,59 @@ function isPublicAdminPath(pathname: string): boolean {
   );
 }
 
+type CachedRedirect = {
+  sourcePath: string;
+  destinationUrl: string;
+  type: 301 | 302;
+  active: boolean;
+};
+
+let cachedRedirects: CachedRedirect[] = [];
+let lastRedirectsFetch = 0;
+
+async function getActiveRedirects(origin: string): Promise<CachedRedirect[]> {
+  const now = Date.now();
+  if (now - lastRedirectsFetch < 15000 && cachedRedirects.length >= 0) {
+    return cachedRedirects;
+  }
+  try {
+    const res = await fetch(`${origin}/api/redirects`, {
+      next: { revalidate: 15 },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      cachedRedirects = Array.isArray(data.redirects) ? data.redirects : [];
+      lastRedirectsFetch = now;
+    }
+  } catch {
+    // Ignore network errors during build/edge
+  }
+  return cachedRedirects;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (!pathname.startsWith("/admin")) {
+    if (
+      !pathname.startsWith("/api") &&
+      !pathname.startsWith("/_next") &&
+      !pathname.includes(".")
+    ) {
+      const redirects = await getActiveRedirects(request.nextUrl.origin);
+      const match = redirects.find(
+        (r) =>
+          r.active &&
+          (r.sourcePath === pathname ||
+            r.sourcePath.replace(/\/$/, "") === pathname.replace(/\/$/, ""))
+      );
+      if (match && match.destinationUrl !== pathname) {
+        const dest = match.destinationUrl.startsWith("http")
+          ? match.destinationUrl
+          : new URL(match.destinationUrl, request.url).toString();
+        return NextResponse.redirect(dest, match.type === 302 ? 302 : 301);
+      }
+    }
     return NextResponse.next();
   }
 
@@ -47,5 +96,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
+

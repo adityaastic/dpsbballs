@@ -6,6 +6,8 @@ export type TableItem = {
 };
 
 export type Product = {
+  id?: string;
+  _id?: string;
   slug: string;
   title: string;
   short: string;

@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Field, inputClass, useToast } from "./AdminUI";
+import SeoEditorPanel, {
+  InternalLinkCandidate,
+} from "@/components/admin/SeoEditorPanel";
+import { SeoMetadataPayload } from "@/lib/seoAnalyzer";
 
 type ProductFormData = {
   slug: string;
@@ -41,9 +45,58 @@ export default function ProductForm({ initial, mode }: Props) {
   const [data, setData] = useState<ProductFormData>(
     { ...emptyProduct, ...(initial || {}) }
   );
+  const [seoOverride, setSeoOverride] = useState<SeoMetadataPayload>({
+    focusKeyword: initial?.title || "",
+    secondaryKeywords: ["precision balls India", "ISO 3290 balls"],
+    seoTitle: initial?.title
+      ? `${initial.title} Manufacturer & Supplier India`
+      : "",
+    metaDescription: initial?.short || initial?.description || "",
+    slug: initial?.slug || "",
+    canonicalUrl: initial?.slug
+      ? `https://www.dspballs.co.in/products/${initial.slug}`
+      : "",
+    robotsIndex: true,
+    robotsFollow: true,
+    ogTitle: initial?.title || "",
+    ogDescription: initial?.short || "",
+    ogImage: initial?.imageUrl || "",
+    breadcrumbTitle: initial?.title || "",
+    schemaType: "Product",
+    faqItems: [],
+  });
+  const [linkCandidates, setLinkCandidates] = useState<InternalLinkCandidate[]>(
+    []
+  );
   const [submitting, setSubmitting] = useState(false);
   const { ToastContainer, show } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/admin/seo/overview")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((ov) => {
+        if (!ov?.items) return;
+        setLinkCandidates(
+          ov.items.map((it: any) => ({
+            title: it.title,
+            urlPath: it.urlPath,
+            entityType: it.entityType,
+            focusKeyword: it.seo?.focusKeyword || "",
+          }))
+        );
+        if (initial?.slug) {
+          const match = ov.items.find(
+            (it: any) =>
+              it.entityType === "product" && it.entityId === initial.slug
+          );
+          if (match?.seo) {
+            setSeoOverride(match.seo);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [initial?.slug]);
 
   const update = <K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) =>
     setData((d) => ({ ...d, [key]: value }));
@@ -190,7 +243,36 @@ export default function ProductForm({ initial, mode }: Props) {
       }
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed");
-      show(mode === "new" ? "Product created" : "Product saved", "success");
+
+      const prodSlug =
+        json.product?.slug ||
+        clean.slug ||
+        clean.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+
+      if (prodSlug) {
+        await fetch("/api/admin/seo/bulk", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            update: {
+              id: `product:${prodSlug}`,
+              entityType: "product",
+              entityId: prodSlug,
+              urlPath: `/products/${prodSlug}`,
+              title: clean.title,
+              seo: {
+                ...seoOverride,
+                slug: prodSlug,
+              },
+            },
+          }),
+        });
+      }
+
+      show(mode === "new" ? "Product & SEO created" : "Product & SEO saved", "success");
       setTimeout(() => router.push("/admin/products"), 400);
     } catch {
       show("Operation failed", "error");
@@ -471,6 +553,33 @@ export default function ProductForm({ initial, mode }: Props) {
           </div>
         ))}
       </div>
+
+      {/* RANK MATH / YOAST PRODUCT SEO SUITE */}
+      <SeoEditorPanel
+        title={data.title || "Product"}
+        bodyHtml={[
+          `<h2>${data.title || ""}</h2>`,
+          `<p>${data.short || ""}</p>`,
+          `<p>${data.description || ""}</p>`,
+          `<h3>Highlights & Grades</h3>`,
+          `<ul>${(data.highlights || [])
+            .filter(Boolean)
+            .map((h) => `<li>${h}</li>`)
+            .join("")}</ul>`,
+          `<ul>${(data.grades || [])
+            .filter(Boolean)
+            .map((g) => `<li>${g}</li>`)
+            .join("")}</ul>`,
+          data.imageUrl
+            ? `<img src="${data.imageUrl}" alt="${data.title}" />`
+            : "",
+          `<a href="/products">All Precision Ball Products</a> <a href="/contact">Request Quote</a>`,
+        ].join("\n")}
+        urlPath={`/products/${data.slug || "product"}`}
+        seo={seoOverride}
+        onChange={setSeoOverride}
+        linkCandidates={linkCandidates}
+      />
 
       <div className="pt-4 border-t border-slate-200 flex gap-3 sticky bottom-0 bg-white/80 backdrop-blur py-4">
         <button

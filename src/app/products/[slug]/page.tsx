@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ComingSoon from "@/components/ComingSoon";
+import ProductHeroBanner from "@/components/ProductHeroBanner";
 import { getProduct, getProducts } from "@/lib/cms";
+import { resolveNextPageMetadata } from "@/lib/seoCms";
+import { getProductBannerConfig } from "@/lib/productBanners";
+import { verifySession } from "@/lib/auth";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -28,19 +32,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return { title: "Product" };
-  return {
-    title: product.title,
-    description: product.short,
-  };
+  return resolveNextPageMetadata({
+    entityType: "product",
+    entityId: product.slug,
+    urlPath: `/products/${product.slug}`,
+    fallbackTitle: `${product.title} Manufacturer & Supplier India`,
+    fallbackDescription: product.short || product.description,
+    fallbackImage: product.imageUrl,
+    fallbackKeywords: [
+      product.title,
+      `${product.title} manufacturer India`,
+      ...(product.grades || []),
+    ],
+  });
 }
 
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [product, products] = await Promise.all([
+  const [product, products, session] = await Promise.all([
     getProduct(slug),
     getProducts(),
+    verifySession(),
   ]);
   if (!product) notFound();
+
+  const isAdmin = Boolean(session && session.role === "admin");
+  const initialBanner = await getProductBannerConfig(
+    product.slug,
+    (product as any).id || (product as any)._id
+  );
 
   const others = products.filter((p) => p.slug !== product.slug).slice(0, 3);
 
@@ -105,40 +125,11 @@ export default async function ProductDetailPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <section className="page-hero">
-        <div className="page-hero-bg" aria-hidden />
-        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-14 md:grid-cols-2 md:items-end md:px-6 md:py-20">
-          <div>
-            <p className="eyebrow">
-              <Link href="/products" className="hover:underline">
-                Products
-              </Link>{" "}
-              / {product.title}
-            </p>
-            <h1 className="mt-3 font-display text-4xl tracking-tight text-white md:text-5xl">
-              {product.title}
-            </h1>
-            <p className="mt-4 max-w-xl text-white/75">{product.short}</p>
-            <Link href="/contact" className="btn btn-accent mt-8">
-              Enquire now
-            </Link>
-          </div>
-          {product.imageUrl &&
-          !product.imageUrl.startsWith("/images/products/") &&
-          !product.imageUrl.includes("hero-desktop") ? (
-            <div className="rounded overflow-hidden border border-white/10">
-              {/* eslint-disable-next-line */}
-              <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover aspect-[16/9]" />
-            </div>
-          ) : (
-            <ComingSoon
-              label={`${product.title} photo coming soon`}
-              aspect="wide"
-              className="border border-white/10"
-            />
-          )}
-        </div>
-      </section>
+      <ProductHeroBanner
+        product={product}
+        initialBanner={initialBanner}
+        isAdmin={isAdmin}
+      />
 
       <section className="section">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-[1.2fr_0.8fr] md:px-6">

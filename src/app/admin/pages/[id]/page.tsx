@@ -8,6 +8,10 @@ import AdminPageHeader, {
   inputClass,
   useToast,
 } from "@/components/admin/AdminUI";
+import SeoEditorPanel, {
+  InternalLinkCandidate,
+} from "@/components/admin/SeoEditorPanel";
+import { SeoMetadataPayload } from "@/lib/seoAnalyzer";
 
 function isVideo(url?: string): boolean {
   if (!url) return false;
@@ -18,6 +22,12 @@ export default function AdminPageEdit() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [page, setPage] = useState<any>(null);
+  const [seoOverride, setSeoOverride] = useState<SeoMetadataPayload | null>(
+    null
+  );
+  const [linkCandidates, setLinkCandidates] = useState<InternalLinkCandidate[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { show, ToastContainer } = useToast();
@@ -27,10 +37,59 @@ export default function AdminPageEdit() {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/pages/${params.id}`);
+        const [res, ovRes] = await Promise.all([
+          fetch(`/api/admin/pages/${params.id}`),
+          fetch("/api/admin/seo/overview"),
+        ]);
         const json = await res.json();
         if (!res.ok) throw new Error(json.error);
-        setPage(json.page);
+        const loadedPage = json.page;
+        setPage(loadedPage);
+
+        if (ovRes.ok) {
+          const ov = await ovRes.json();
+          const items = ov.items || [];
+          setLinkCandidates(
+            items.map((it: any) => ({
+              title: it.title,
+              urlPath: it.urlPath,
+              entityType: it.entityType,
+              focusKeyword: it.seo?.focusKeyword || "",
+            }))
+          );
+          const match = items.find(
+            (it: any) =>
+              it.entityType === "page" && it.entityId === loadedPage.slug
+          );
+          if (match?.seo) {
+            setSeoOverride(match.seo);
+          } else {
+            const pPath =
+              loadedPage.slug === "home" ? "/" : `/${loadedPage.slug}`;
+            setSeoOverride({
+              focusKeyword: (loadedPage.seoKeywords || "").split(",")[0]?.trim() || loadedPage.title || "",
+              secondaryKeywords: (loadedPage.seoKeywords || "")
+                .split(",")
+                .slice(1)
+                .map((s: string) => s.trim())
+                .filter(Boolean),
+              seoTitle: loadedPage.seoTitle || loadedPage.title || "",
+              metaDescription:
+                loadedPage.seoDescription || loadedPage.heroDescription || "",
+              slug: loadedPage.slug || "",
+              canonicalUrl: `https://www.dspballs.co.in${pPath}`,
+              robotsIndex: true,
+              robotsFollow: true,
+              ogTitle: loadedPage.seoTitle || loadedPage.title || "",
+              ogDescription:
+                loadedPage.seoDescription || loadedPage.heroDescription || "",
+              ogImage: loadedPage.ogImageUrl || "",
+              breadcrumbTitle: loadedPage.title || "",
+              schemaType: "WebPage",
+              faqItems: [],
+            });
+          }
+        }
       } catch (e: any) {
         show(e.message, "error");
       } finally {
@@ -119,14 +178,48 @@ export default function AdminPageEdit() {
     e.preventDefault();
     setSaving(true);
     try {
+      const mergedPage = seoOverride
+        ? {
+            ...page,
+            seoTitle: seoOverride.seoTitle || page.seoTitle,
+            seoDescription: seoOverride.metaDescription || page.seoDescription,
+            seoKeywords: [
+              seoOverride.focusKeyword,
+              ...(seoOverride.secondaryKeywords || []),
+            ]
+              .filter(Boolean)
+              .join(", "),
+            ogImageUrl: seoOverride.ogImage || page.ogImageUrl,
+          }
+        : page;
+
       const res = await fetch(`/api/admin/pages/${page._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(page),
+        body: JSON.stringify(mergedPage),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Save failed");
-      show("Page saved & published live!", "success");
+
+      if (seoOverride) {
+        const pPath = page.slug === "home" ? "/" : `/${page.slug}`;
+        await fetch("/api/admin/seo/bulk", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            update: {
+              id: `page:${page.slug}`,
+              entityType: "page",
+              entityId: page.slug,
+              urlPath: pPath,
+              title: page.title,
+              seo: seoOverride,
+            },
+          }),
+        });
+      }
+
+      show("Page & Rank Math SEO settings saved live!", "success");
     } catch (e: any) {
       show(e.message, "error");
     } finally {
@@ -382,75 +475,40 @@ export default function AdminPageEdit() {
         </div>
       </div>
 
-      {/* PER-PAGE SEO SETTINGS */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-5">
-        <h3 className="font-semibold text-slate-900 text-lg flex items-center gap-2">
-          <span>🔍</span> Per-Page SEO & Google Search Meta
-        </h3>
-        <p className="text-xs text-slate-500">
-          Customize how this specific page appears in Google search results and when shared on LinkedIn, WhatsApp, etc.
-        </p>
-
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg max-w-xl">
-          <div className="text-xs text-slate-600 truncate mb-1">
-            https://www.dspballs.co.in{pagePath}
-          </div>
-          <div className="text-base text-blue-700 font-medium truncate">
-            {page.seoTitle || page.title || "Page Title"} | DSP Precision Products Pvt. Ltd.
-          </div>
-          <div className="text-xs text-slate-600 mt-1 line-clamp-2">
-            {page.seoDescription || page.heroDescription || "Page description in search results."}
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-5">
-          <Field label="Page SEO Meta Title (overrides default)">
-            <input
-              className={inputClass()}
-              value={page.seoTitle || ""}
-              onChange={(e) => update("seoTitle", e.target.value)}
-              placeholder={`${page.title} | DSP Precision Products`}
-            />
-          </Field>
-          <Field label="Page Keywords (comma-separated)">
-            <input
-              className={inputClass()}
-              value={page.seoKeywords || ""}
-              onChange={(e) => update("seoKeywords", e.target.value)}
-              placeholder="precision balls, manufacturer, grade 10..."
-            />
-          </Field>
-        </div>
-
-        <Field label="Page Meta Description">
-          <textarea
-            className={`${inputClass()} min-h-[80px]`}
-            value={page.seoDescription || ""}
-            onChange={(e) => update("seoDescription", e.target.value)}
-            placeholder="Targeted summary for this specific page..."
-          />
-        </Field>
-
-        <Field label="Social Share (OG) Image for this page">
-          <div className="flex items-center gap-3">
-            <input
-              className={`${inputClass()} font-mono text-xs`}
-              value={page.ogImageUrl || ""}
-              onChange={(e) => update("ogImageUrl", e.target.value)}
-              placeholder="https://... custom social share image URL"
-            />
-            <label className="cursor-pointer text-xs font-semibold px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded whitespace-nowrap">
-              <span>Upload Image</span>
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={(e) => e.target.files?.[0] && uploadOgImage(e.target.files[0])}
-              />
-            </label>
-          </div>
-        </Field>
-      </div>
+      {/* RANK MATH / YOAST SEO SUITE */}
+      {seoOverride && (
+        <SeoEditorPanel
+          title={page.title || ""}
+          bodyHtml={
+            [
+              `<h2>${page.heroTitle || page.title || ""}</h2>`,
+              `<p>${page.heroDescription || ""}</p>`,
+              ...(page.sections || []).map(
+                (s: any) =>
+                  `<h2>${s.heading || ""}</h2><p>${s.body || ""}</p>${
+                    s.imageUrl && !isVideo(s.imageUrl)
+                      ? `<img src="${s.imageUrl}" alt="${s.heading || page.title}" />`
+                      : ""
+                  }${
+                    s.buttonLink
+                      ? `<a href="${s.buttonLink}">${s.buttonText || "Learn more"}</a>`
+                      : ""
+                  }`
+              ),
+              page.bodyHtml || "",
+            ].join("\n")
+          }
+          urlPath={pagePath}
+          seo={seoOverride}
+          onChange={(nextSeo) => {
+            setSeoOverride(nextSeo);
+            update("seoTitle", nextSeo.seoTitle);
+            update("seoDescription", nextSeo.metaDescription);
+            update("ogImageUrl", nextSeo.ogImage);
+          }}
+          linkCandidates={linkCandidates}
+        />
+      )}
 
       {/* FREE-FORM HTML */}
       <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-5">

@@ -7,6 +7,11 @@ import { useAdminAuth } from "./AdminAuthProvider";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "◼", group: "Overview" },
+  { href: "/admin/seo", label: "SEO Command Center", icon: "🚀", group: "SEO & Blog Suite" },
+  { href: "/admin/blog", label: "Blog Articles", icon: "✍️", group: "SEO & Blog Suite" },
+  { href: "/admin/seo/bulk", label: "Bulk SEO Editor", icon: "⚡", group: "SEO & Blog Suite" },
+  { href: "/admin/seo/links", label: "Internal Link Manager", icon: "🔗", group: "SEO & Blog Suite" },
+  { href: "/admin/seo/technical", label: "Technical SEO & Schema", icon: "🛠️", group: "SEO & Blog Suite" },
   { href: "/admin/hero", label: "Home Hero Slider", icon: "🖼️", group: "Content" },
   { href: "/admin/pages/home", label: "Home Page Sections", icon: "🏠", group: "Content" },
   { href: "/admin/products", label: "Products", icon: "⬢", group: "Content" },
@@ -19,7 +24,8 @@ const navItems = [
 
 const groupLabels: Record<string, string> = {
   Overview: "",
-  Content: "Content",
+  "SEO & Blog Suite": "SEO & Blog Suite (Rank Math)",
+  Content: "Website Content",
   Engagement: "Engagement",
   System: "System",
 };
@@ -90,7 +96,11 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
-    return pathname?.startsWith(href);
+    if (href === "/admin/seo") return pathname === "/admin/seo";
+    if (href === "/admin/pages") {
+      return pathname === "/admin/pages" || (pathname?.startsWith("/admin/pages/") && !pathname?.startsWith("/admin/pages/home"));
+    }
+    return pathname === href || pathname?.startsWith(href + "/");
   };
 
   const breadcrumb = () => {
@@ -271,6 +281,12 @@ export default function AdminLayoutClient({ children }: { children: ReactNode })
                 {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white" />
                 )}
+              </Link>
+              <Link
+                href="/admin/blog/new"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition"
+              >
+                ✍️ Write Blog Post
               </Link>
               <Link
                 href="/admin/media"

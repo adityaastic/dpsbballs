@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "./auth";
+import { verifySession, AdminRole } from "./auth";
 
-export async function requireAuth(minRole: "admin" | "editor" = "editor") {
+const ROLE_WEIGHT: Record<AdminRole, number> = {
+  admin: 100,
+  seo_manager: 80,
+  seo_editor: 50,
+  editor: 50,
+};
+
+export async function requireAuth(minRole: AdminRole = "editor") {
   const session = await verifySession();
   if (!session) {
     return {
@@ -10,12 +17,19 @@ export async function requireAuth(minRole: "admin" | "editor" = "editor") {
     };
   }
 
-  if (minRole === "admin" && session.role !== "admin") {
+  const userWeight = ROLE_WEIGHT[session.role] ?? 50;
+  const requiredWeight = ROLE_WEIGHT[minRole] ?? 50;
+
+  if (userWeight < requiredWeight) {
     return {
-      response: NextResponse.json({ error: "Forbidden - admin only" }, { status: 403 }),
+      response: NextResponse.json(
+        { error: `Forbidden - requires ${minRole} or higher privileges` },
+        { status: 403 }
+      ),
       session: null,
     };
   }
 
   return { response: null, session };
 }
+

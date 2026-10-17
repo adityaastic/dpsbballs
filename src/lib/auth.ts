@@ -6,11 +6,13 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 const COOKIE_NAME = "dsp_admin_session";
 
+export type AdminRole = "admin" | "seo_manager" | "seo_editor" | "editor";
+
 export type AdminJWTPayload = {
   id: string;
   username: string;
   email: string;
-  role: "admin" | "editor";
+  role: AdminRole;
 };
 
 export async function createSession(payload: AdminJWTPayload): Promise<string> {
