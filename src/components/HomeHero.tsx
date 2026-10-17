@@ -47,7 +47,6 @@ function HeroMediaItem({
       if (playPromise !== undefined) {
         playPromise.catch(() => {
           if (cancelled) return;
-          // Wait until browser has buffered enough data, then play
           const handleCanPlay = () => {
             video.removeEventListener("canplay", handleCanPlay);
             if (!cancelled && isActive) {
@@ -62,7 +61,6 @@ function HeroMediaItem({
 
     if (isActive) {
       retriedRef.current = false;
-      // If browser evicted decoder/network state while inactive, reload the stream
       if (video.readyState === 0 || video.error) {
         video.load();
         attemptPlay();
@@ -253,34 +251,37 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 
   return (
     <section className="home-hero">
-      {/* DESKTOP FULL-SCREEN BANNER (FITS 100% ON FIRST VIEWPORT) */}
-      <div className="home-hero-media home-hero-media-desktop relative overflow-hidden group w-full h-[calc(100dvh-4.25rem)]">
-        <div
-          className="flex w-full h-full transition-transform duration-700 ease-out"
-          style={{ transform: `translateX(-${activeDesktopIdx * 100}%)` }}
-        >
-          {effectiveDesktopSlides.map((slide, idx) => {
-            const url = slide.desktopUrl || defaultFallbackImage;
-            return (
-              <div
-                key={`desk-${idx}-${url}`}
-                className="w-full h-full shrink-0 flex-none"
-              >
-                <HeroMediaItem
-                  url={url}
-                  alt={
-                    slide.headline ||
-                    `DSP Precision Products Banner ${idx + 1}`
-                  }
-                  className="w-full h-full object-fill block"
-                  isActive={activeDesktopIdx === idx}
-                  shouldLoop={desktopCount <= 1}
-                  onVideoEnded={() => goToDesktop(activeDesktopIdx + 1)}
-                />
-              </div>
-            );
-          })}
-        </div>
+      {/* DESKTOP FULL-SCREEN BANNER (NATIVE HARDWARE VIDEO SHARPNESS, ZERO GPU TEXTURE DOWNSCALING) */}
+      <div className="home-hero-media home-hero-media-desktop relative overflow-hidden group w-full h-[calc(100dvh-4.25rem)] bg-[#081426]">
+        {effectiveDesktopSlides.map((slide, idx) => {
+          const url = slide.desktopUrl || defaultFallbackImage;
+          const isActive = activeDesktopIdx === idx;
+          const isVid = isVideoUrl(url);
+          return (
+            <div
+              key={`desk-${idx}-${url}`}
+              className={`w-full h-full transition-opacity duration-500 ${
+                isActive
+                  ? "relative z-1 opacity-100"
+                  : "absolute inset-0 z-0 opacity-0 pointer-events-none"
+              }`}
+            >
+              <HeroMediaItem
+                url={url}
+                alt={
+                  slide.headline ||
+                  `DSP Precision Products Banner ${idx + 1}`
+                }
+                className={`w-full h-full block ${
+                  isVid ? "object-cover object-center" : "object-fill"
+                }`}
+                isActive={isActive}
+                shouldLoop={desktopCount <= 1}
+                onVideoEnded={() => goToDesktop(activeDesktopIdx + 1)}
+              />
+            </div>
+          );
+        })}
 
         {desktopCount > 1 && (
           <>
@@ -335,12 +336,15 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
         >
           {mobileSlides.map((s, i) => {
             const url = s.mobileUrl || s.desktopUrl || defaultFallbackImage;
+            const isVid = isVideoUrl(url);
             return (
               <div key={`mob-${i}-${url}`} className="mobile-slide">
                 <HeroMediaItem
                   url={url}
                   alt={`Mobile banner ${i + 1}`}
-                  className="w-full h-full object-contain"
+                  className={`w-full h-full ${
+                    isVid ? "object-cover object-center" : "object-contain"
+                  }`}
                   isActive={activeIdx === i}
                   shouldLoop={count <= 1}
                   onVideoEnded={() => goTo(activeIdx + 1)}
