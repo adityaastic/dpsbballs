@@ -301,8 +301,8 @@ export default function AdminHeroPage() {
     const key = `${idx}-${field}`;
     setUploadingKey(key);
     try {
-      if (file.size > 100 * 1024 * 1024) {
-        throw new Error("File exceeds 100MB limit. Please compress or optimize the video.");
+      if (file.size > 300 * 1024 * 1024) {
+        throw new Error("File exceeds 300MB limit. Please compress or optimize the video.");
       }
 
       const form = new FormData();
