@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { HeroSlide } from "@/lib/cms";
 
 export function isVideoUrl(url?: string): boolean {
@@ -12,38 +12,66 @@ export function isVideoUrl(url?: string): boolean {
   );
 }
 
-function HeroMediaItem({ url, alt, className }: { url: string; alt: string; className: string }) {
+function HeroMediaItem({
+  url,
+  alt,
+  className,
+  isActive = true,
+  shouldLoop = false,
+  onVideoEnded,
+}: {
+  url: string;
+  alt: string;
+  className: string;
+  isActive?: boolean;
+  shouldLoop?: boolean;
+  onVideoEnded?: () => void;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.defaultMuted = true;
-      videoRef.current.muted = true;
-      videoRef.current.play().catch(() => {});
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.defaultMuted = true;
+    video.muted = true;
+
+    if (isActive) {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
     }
-  }, [url]);
+  }, [url, isActive]);
 
   if (isVideoUrl(url)) {
     return (
       <video
         ref={videoRef}
         src={url}
-        autoPlay
-        loop
+        autoPlay={isActive}
+        loop={shouldLoop}
         muted
         playsInline
         preload="auto"
+        onEnded={() => {
+          if (!shouldLoop && isActive && onVideoEnded) {
+            onVideoEnded();
+          }
+        }}
+        onError={() => {
+          if (isActive && onVideoEnded) {
+            onVideoEnded();
+          }
+        }}
         className={className}
       />
     );
   }
   return (
     /* eslint-disable-next-line @next/next/no-img-element */
-    <img
-      src={url}
-      alt={alt}
-      className={className}
-    />
+    <img src={url} alt={alt} className={className} />
   );
 }
 
@@ -52,8 +80,8 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   const [activeDesktopIdx, setActiveDesktopIdx] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const desktopIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const desktopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const defaultFallbackImage =
     "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80";
@@ -61,69 +89,100 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   const normalizedSlides = slides && slides.length > 0 ? slides : [];
 
   // Desktop slides setup: ONLY slides that have a dedicated desktopUrl!
-  const desktopSlides = normalizedSlides.filter((s) => Boolean(s.desktopUrl && s.desktopUrl.trim() !== ""));
-  const effectiveDesktopSlides = desktopSlides.length > 0 ? desktopSlides : [
-    { desktopUrl: defaultFallbackImage, mobileUrl: "", headline: "", subline: "", order: 0 }
-  ];
+  const desktopSlides = normalizedSlides.filter((s) =>
+    Boolean(s.desktopUrl && s.desktopUrl.trim() !== "")
+  );
+  const effectiveDesktopSlides =
+    desktopSlides.length > 0
+      ? desktopSlides
+      : [
+          {
+            desktopUrl: defaultFallbackImage,
+            mobileUrl: "",
+            headline: "",
+            subline: "",
+            order: 0,
+          },
+        ];
 
-  // Desktop auto-advance when multiple desktop slides exist
+  const desktopCount = effectiveDesktopSlides.length;
+
+  const goToDesktop = useCallback(
+    (i: number) => {
+      if (desktopCount === 0) return;
+      if (desktopTimerRef.current) clearTimeout(desktopTimerRef.current);
+      setActiveDesktopIdx(((i % desktopCount) + desktopCount) % desktopCount);
+    },
+    [desktopCount]
+  );
+
+  // Desktop auto-advance: only set timer if active slide is an IMAGE (videos advance via onEnded)
   useEffect(() => {
-    if (effectiveDesktopSlides.length <= 1) return;
-    desktopIntervalRef.current = setInterval(() => {
-      setActiveDesktopIdx((i) => (i + 1) % effectiveDesktopSlides.length);
+    if (desktopTimerRef.current) clearTimeout(desktopTimerRef.current);
+    if (desktopCount <= 1) return;
+
+    const currentSlide = effectiveDesktopSlides[activeDesktopIdx];
+    const currentUrl = currentSlide?.desktopUrl || defaultFallbackImage;
+
+    // If current slide is a video, wait for onVideoEnded instead of fixed timer
+    if (isVideoUrl(currentUrl)) return;
+
+    desktopTimerRef.current = setTimeout(() => {
+      setActiveDesktopIdx((i) => (i + 1) % desktopCount);
     }, 6000);
+
     return () => {
-      if (desktopIntervalRef.current) clearInterval(desktopIntervalRef.current);
+      if (desktopTimerRef.current) clearTimeout(desktopTimerRef.current);
     };
-  }, [effectiveDesktopSlides.length]);
+  }, [activeDesktopIdx, desktopCount, effectiveDesktopSlides]);
 
-  const goToDesktop = (i: number) => {
-    if (effectiveDesktopSlides.length === 0) return;
-    const next = (i + effectiveDesktopSlides.length) % effectiveDesktopSlides.length;
-    setActiveDesktopIdx(next);
-    if (desktopIntervalRef.current) {
-      clearInterval(desktopIntervalRef.current);
-      desktopIntervalRef.current = setInterval(() => {
-        setActiveDesktopIdx((cur) => (cur + 1) % effectiveDesktopSlides.length);
-      }, 6000);
-    }
-  };
-
-  // Mobile slides setup (ensure at least 3 slides for smooth carousel)
-  const mobileSlidesRaw = normalizedSlides.filter((s) => Boolean(s.mobileUrl?.trim() || s.desktopUrl?.trim()));
-  let mobileSlides = [...mobileSlidesRaw];
-  while (mobileSlides.length > 0 && mobileSlides.length < 3) {
-    mobileSlides = [...mobileSlides, ...mobileSlidesRaw].slice(0, 3);
-  }
-  if (mobileSlides.length === 0) {
-    mobileSlides = [
-      { desktopUrl: defaultFallbackImage, mobileUrl: defaultFallbackImage, headline: "", subline: "", order: 0 },
-      { desktopUrl: defaultFallbackImage, mobileUrl: defaultFallbackImage, headline: "", subline: "", order: 1 },
-      { desktopUrl: defaultFallbackImage, mobileUrl: defaultFallbackImage, headline: "", subline: "", order: 2 },
-    ];
-  }
+  // Mobile slides setup
+  const mobileSlidesRaw = normalizedSlides.filter((s) =>
+    Boolean(s.mobileUrl?.trim() || s.desktopUrl?.trim())
+  );
+  const mobileSlides =
+    mobileSlidesRaw.length > 0
+      ? mobileSlidesRaw
+      : [
+          {
+            desktopUrl: defaultFallbackImage,
+            mobileUrl: defaultFallbackImage,
+            headline: "",
+            subline: "",
+            order: 0,
+          },
+        ];
   const count = mobileSlides.length;
 
+  const goTo = useCallback(
+    (i: number) => {
+      if (count === 0) return;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setActiveIdx(((i % count) + count) % count);
+    },
+    [count]
+  );
+
+  // Mobile auto-advance: only set timer if active slide is an IMAGE (videos advance via onEnded)
   useEffect(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     if (count <= 1) return;
-    intervalRef.current = setInterval(() => {
+
+    const currentSlide = mobileSlides[activeIdx];
+    const currentUrl =
+      currentSlide?.mobileUrl || currentSlide?.desktopUrl || defaultFallbackImage;
+
+    // If current slide is a video, wait for onVideoEnded instead of fixed timer
+    if (isVideoUrl(currentUrl)) return;
+
+    timerRef.current = setTimeout(() => {
       setActiveIdx((i) => (i + 1) % count);
     }, 5500);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [count]);
 
-  const goTo = (i: number) => {
-    if (count === 0) return;
-    setActiveIdx((i + count) % count);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = setInterval(() => {
-        setActiveIdx((cur) => (cur + 1) % count);
-      }, 5500);
-    }
-  };
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [activeIdx, count, mobileSlides]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -159,15 +218,21 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
               >
                 <HeroMediaItem
                   url={url}
-                  alt={slide.headline || `DSP Precision Products Banner ${idx + 1}`}
+                  alt={
+                    slide.headline ||
+                    `DSP Precision Products Banner ${idx + 1}`
+                  }
                   className="w-full h-full object-fill block"
+                  isActive={activeDesktopIdx === idx}
+                  shouldLoop={desktopCount <= 1}
+                  onVideoEnded={() => goToDesktop(activeDesktopIdx + 1)}
                 />
               </div>
             );
           })}
         </div>
 
-        {effectiveDesktopSlides.length > 1 && (
+        {desktopCount > 1 && (
           <>
             <button
               type="button"
@@ -193,7 +258,9 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
                   aria-label={`Go to slide ${i + 1}`}
                   onClick={() => goToDesktop(i)}
                   className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeDesktopIdx === i ? "w-8 bg-amber-500" : "w-2 bg-white/60 hover:bg-white"
+                    activeDesktopIdx === i
+                      ? "w-8 bg-amber-500"
+                      : "w-2 bg-white/60 hover:bg-white"
                   }`}
                 />
               ))}
@@ -224,6 +291,9 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
                   url={url}
                   alt={`Mobile banner ${i + 1}`}
                   className="w-full h-full object-contain"
+                  isActive={activeIdx === i}
+                  shouldLoop={count <= 1}
+                  onVideoEnded={() => goTo(activeIdx + 1)}
                 />
               </div>
             );
@@ -231,7 +301,11 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
         </div>
 
         {count > 1 && (
-          <div className="mobile-carousel-dots" role="tablist" aria-label="Hero slides">
+          <div
+            className="mobile-carousel-dots"
+            role="tablist"
+            aria-label="Hero slides"
+          >
             {mobileSlides.map((_, i) => (
               <button
                 key={`dot-mob-${i}`}
@@ -239,7 +313,9 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
                 aria-selected={activeIdx === i}
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => goTo(i)}
-                className={`carousel-dot ${activeIdx === i ? "carousel-dot-active" : ""}`}
+                className={`carousel-dot ${
+                  activeIdx === i ? "carousel-dot-active" : ""
+                }`}
               />
             ))}
           </div>
@@ -250,4 +326,3 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
 }
 
 export default HomeHero;
-
