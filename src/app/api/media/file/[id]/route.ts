@@ -17,12 +17,16 @@ export async function GET(
       : await query.or(`filename.eq.${id},path.eq.${id}`).maybeSingle();
 
     if (media?.url?.startsWith("http")) {
-      return NextResponse.redirect(media.url);
+      const res = NextResponse.redirect(media.url, 308);
+      res.headers.set("Cache-Control", "public, max-age=31536000, s-maxage=31536000, immutable");
+      return res;
     }
 
     if (media?.path) {
       const publicUrl = getSupabasePublicUrl(media.path);
-      return NextResponse.redirect(publicUrl);
+      const res = NextResponse.redirect(publicUrl, 308);
+      res.headers.set("Cache-Control", "public, max-age=31536000, s-maxage=31536000, immutable");
+      return res;
     }
 
     return NextResponse.json({ error: "File not found" }, { status: 404 });

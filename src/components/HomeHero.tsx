@@ -29,6 +29,13 @@ function HeroMediaItem({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const retriedRef = useRef(false);
+  const [hasActivated, setHasActivated] = useState(isActive);
+
+  useEffect(() => {
+    if (isActive && !hasActivated) {
+      setHasActivated(true);
+    }
+  }, [isActive, hasActivated]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -81,18 +88,18 @@ function HeroMediaItem({
     return () => {
       cancelled = true;
     };
-  }, [url, isActive]);
+  }, [url, isActive, hasActivated]);
 
   if (isVideoUrl(url)) {
     return (
       <video
         ref={videoRef}
-        src={url}
+        src={hasActivated ? url : undefined}
         autoPlay={isActive}
         loop={shouldLoop}
         muted
         playsInline
-        preload={isActive ? "auto" : "metadata"}
+        preload={isActive ? "auto" : "none"}
         onCanPlay={() => {
           const video = videoRef.current;
           if (isActive && video && video.paused) {
@@ -119,17 +126,27 @@ function HeroMediaItem({
   }
   return (
     /* eslint-disable-next-line @next/next/no-img-element */
-    <img src={url} alt={alt} className={className} />
+    <img src={url} alt={alt} loading={isActive ? "eager" : "lazy"} className={className} />
   );
 }
 
 function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [activeDesktopIdx, setActiveDesktopIdx] = useState(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const desktopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767.98px)");
+    const update = () => setIsMobileViewport(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   const defaultFallbackImage =
     "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80";
@@ -275,7 +292,7 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
                 className={`w-full h-full block ${
                   isVid ? "object-cover object-center" : "object-fill"
                 }`}
-                isActive={isActive}
+                isActive={!isMobileViewport && isActive}
                 shouldLoop={desktopCount <= 1}
                 onVideoEnded={() => goToDesktop(activeDesktopIdx + 1)}
               />
@@ -345,7 +362,7 @@ function HomeHero({ slides }: { slides: HeroSlide[]; tagline?: string }) {
                   className={`w-full h-full ${
                     isVid ? "object-cover object-center" : "object-contain"
                   }`}
-                  isActive={activeIdx === i}
+                  isActive={isMobileViewport && activeIdx === i}
                   shouldLoop={count <= 1}
                   onVideoEnded={() => goTo(activeIdx + 1)}
                 />

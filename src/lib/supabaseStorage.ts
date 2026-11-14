@@ -21,6 +21,7 @@ export async function uploadToSupabaseStorage(
 
   const { error } = await supabase.storage.from(bucket).upload(path, buffer, {
     contentType: contentType || "application/octet-stream",
+    cacheControl: "31536000",
     upsert: true,
   });
 
