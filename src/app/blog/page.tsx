@@ -3,7 +3,7 @@ import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { getAllBlogArticles, resolveNextPageMetadata } from "@/lib/seoCms";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return resolveNextPageMetadata({

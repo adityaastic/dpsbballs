@@ -23,8 +23,7 @@ type SiteData = {
   highlights: SiteHighlight[];
 };
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300;
 
 function isVideo(url?: string): boolean {
   if (!url) return false;

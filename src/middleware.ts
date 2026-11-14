@@ -27,12 +27,12 @@ let lastRedirectsFetch = 0;
 
 async function getActiveRedirects(origin: string): Promise<CachedRedirect[]> {
   const now = Date.now();
-  if (now - lastRedirectsFetch < 15000 && cachedRedirects.length >= 0) {
+  if (now - lastRedirectsFetch < 300000 && cachedRedirects.length >= 0) {
     return cachedRedirects;
   }
   try {
     const res = await fetch(`${origin}/api/redirects`, {
-      next: { revalidate: 15 },
+      next: { revalidate: 300 },
     });
     if (res.ok) {
       const data = await res.json();

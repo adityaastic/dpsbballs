@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getSupabaseAdmin } from "./supabase";
 import {
   products as staticProducts,
@@ -120,7 +121,7 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-export async function getProducts(): Promise<StaticProductType[]> {
+export const getProducts = cache(async (): Promise<StaticProductType[]> => {
   return safe(async () => {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -158,7 +159,7 @@ export async function getProducts(): Promise<StaticProductType[]> {
       };
     });
   }, staticProducts);
-}
+});
 
 export async function getProduct(slug: string): Promise<StaticProductType | undefined> {
   const all = await getProducts();
@@ -202,7 +203,7 @@ export async function getProduct(slug: string): Promise<StaticProductType | unde
   });
 }
 
-export async function getSiteData() {
+export const getSiteData = cache(async () => {
   return safe(
     async () => {
       const supabase = getSupabaseAdmin();
@@ -300,9 +301,9 @@ export async function getSiteData() {
     }
 
   );
-}
+});
 
-export async function getTechnical() {
+export const getTechnical = cache(async () => {
   return safe(
     async () => {
       const supabase = getSupabaseAdmin();
@@ -352,9 +353,9 @@ export async function getTechnical() {
       ceramicCompareRows,
     }
   );
-}
+});
 
-export async function getPageContent(slug: string): Promise<PageContentData | null> {
+export const getPageContent = cache(async (slug: string): Promise<PageContentData | null> => {
   return safe(async () => {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -378,4 +379,4 @@ export async function getPageContent(slug: string): Promise<PageContentData | nu
       bodyHtml: row.body_html || undefined,
     };
   }, null);
-}
+});

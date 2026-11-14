@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { getSupabaseAdmin } from "./supabase";
 import { getProducts } from "./cms";
@@ -717,7 +718,7 @@ const STATIC_PUBLIC_PAGES: {
 // ============================================================================
 // 1. Technical SEO Config Persistence (stored in site_settings key="seo_technical")
 // ============================================================================
-export async function getTechnicalSeoConfig(): Promise<TechnicalSeoConfig> {
+export const getTechnicalSeoConfig = cache(async (): Promise<TechnicalSeoConfig> => {
   try {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -759,7 +760,7 @@ export async function getTechnicalSeoConfig(): Promise<TechnicalSeoConfig> {
   } catch {
     return DEFAULT_TECHNICAL_SEO;
   }
-}
+});
 
 export async function saveTechnicalSeoConfig(
   config: TechnicalSeoConfig
@@ -797,9 +798,9 @@ export async function saveTechnicalSeoConfig(
 // ============================================================================
 // 2. Per-Page & Per-Product SEO Overrides (stored in site_settings key="seo_overrides")
 // ============================================================================
-export async function getSeoOverridesMap(): Promise<
+export const getSeoOverridesMap = cache(async (): Promise<
   Record<string, SeoOverrideRecord>
-> {
+> => {
   try {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -819,7 +820,7 @@ export async function getSeoOverridesMap(): Promise<
   } catch {
     return {};
   }
-}
+});
 
 export async function saveSeoOverridesMap(
   overrides: Record<string, SeoOverrideRecord>
@@ -940,7 +941,7 @@ function parseDbBlogRow(row: {
   };
 }
 
-export async function getAllBlogArticles(): Promise<BlogArticleRecord[]> {
+export const getAllBlogArticles = cache(async (): Promise<BlogArticleRecord[]> => {
   try {
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -972,7 +973,7 @@ export async function getAllBlogArticles(): Promise<BlogArticleRecord[]> {
   } catch {
     return SEED_BLOG_ARTICLES;
   }
-}
+});
 
 export async function getBlogArticleBySlug(
   slug: string
